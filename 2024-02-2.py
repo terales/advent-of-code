@@ -8,12 +8,6 @@ def main(reportsPile):
     measurements.append([int(raw) for raw in report])
 
   for report in measurements:
-    # duplicates can't happen in monotonic set of measurements
-    # and even Problem Dampener can't tolerate more than one duplicate
-    duplicates = len(report) - len(set(report))
-    if duplicates > 1:
-      continue 
-
     fluctuationIndex = getFluctuationIndex(report)
     suddenChangeIndex = getSuddenChangeIndex(report)
     if fluctuationIndex == -1 and suddenChangeIndex == -1:
