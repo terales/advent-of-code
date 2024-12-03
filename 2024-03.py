@@ -34,13 +34,13 @@ xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))
 '''.strip()
 
 with open('2024-03-input.txt') as f:
-    memoryFirstChallenge = f.read()
+    memoryChallenge = f.read()
 
 memorySecondSample = '''
 xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))
 '''.strip()
 
 print("Sample:", main(memorySample))
-print("First challenge:", main(memoryFirstChallenge))
+print("First challenge:", main(memoryChallenge))
 print("Second sample:", conditionalMain(memorySecondSample))
-print("Second challenge:", conditionalMain(memoryFirstChallenge))
+print("Second challenge:", conditionalMain(memoryChallenge))
