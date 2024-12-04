@@ -1,61 +1,25 @@
+import numpy as np
 NEEDLE = 'XMAS'
 
 def main(text):
   lines = text.split('\n')
-  assert isSquareMatrix(lines)
+  matrix = np.array([list(line) for line in lines])
+  rows, columns = matrix.shape
+  diagonals = np.arange(start=(rows - 1) * -1, stop=rows, step=1)
+  assert rows == columns
 
-  verticalLines = [getVerticalString(lines, column) for column in range(0, len(lines))]
-
-  maxDiagonalShift = len(lines) - len(NEEDLE) + 1
-  minDiagonalShift = (maxDiagonalShift - 1) * -1
-  topLeftDiagonalLines = [getDiagonalString(lines, shift) for shift in range(minDiagonalShift, maxDiagonalShift)]
-
-  invertedMatrix = getInvertedMatrix(lines)
-  topRightDiagonalLines = [getDiagonalString(invertedMatrix, shift) for shift in range(minDiagonalShift, maxDiagonalShift)]
+  horisontal = lines
+  vertical = [''.join(matrix[:,column]) for column in range(0, columns)]
+  bottomLeft = [''.join(np.diagonal(matrix, offset=diagonal)) for diagonal in diagonals]
+  bottomRight = [''.join(np.diagonal(np.fliplr(matrix), offset=diagonal)) for diagonal in diagonals]
 
   wordsFound = 0
-  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in lines])
-  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in verticalLines])
-  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in topLeftDiagonalLines])
-  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in topRightDiagonalLines])
+  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in horisontal])
+  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in vertical])
+  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in bottomLeft])
+  wordsFound += sum([line.count(NEEDLE) + line.count(NEEDLE[::-1]) for line in bottomRight])
   
   return wordsFound
-
-def isSquareMatrix(matrix):
-  lengths = [len(row) for row in matrix]
-  if min(lengths) != max(lengths):
-    return False
-  if len(matrix) != lengths[0]:
-    return False
-  return True  
-
-def getDiagonalString(matrix, shift=0):
-  size = len(matrix) - 1
-  diagonal = ''
-
-  if shift >= 0:
-    for row in range(0, size + 1):
-      column = row + shift
-      if column > size:
-        continue
-      diagonal += matrix[row][column]
-  else:
-    for column in range(0, size + 1):
-      row = column + shift * -1
-      if row > size:
-        continue
-      diagonal += matrix[row][column]
-
-  return diagonal
-
-def getInvertedMatrix(matrix):
-  return [string[::-1] for string in reversed(matrix)]
-
-def getVerticalString(matrix, column):
-  verticalString = ''
-  for row in matrix:
-    verticalString += row[column]
-  return verticalString
 
 
 fistSample = '''
