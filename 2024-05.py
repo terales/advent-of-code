@@ -68,5 +68,8 @@ sample = '''
 97,13,75,29,47
 '''.strip()
 
+with open('2024-05-input.txt') as f:
+    firstChallengeInput = f.read()
 
 print(main(sample))
+print(main(firstChallengeInput))
