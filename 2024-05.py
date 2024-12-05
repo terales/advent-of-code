@@ -5,14 +5,23 @@ def main(input):
   pageOrder = getPageOrder(rules)
 
   validUpdates = []
+  invalidUpdates = []
   for update in updates:
     pagesUpdated = update.split(',')
     if isUpdateInValidOrder(pagesUpdated, pageOrder):
       validUpdates.append(pagesUpdated)
+    else:
+      invalidUpdates.append(pagesUpdated)
 
-  middlePages = [update[len(update)//2] for update in validUpdates]
+  fixedInvalidUpdates = [getFixedInvalidOrder(update, pageOrder) for update in invalidUpdates]
 
-  return sum([int(page) for page in middlePages])
+  validMiddlePages = [update[len(update)//2] for update in validUpdates]
+  invalidMiddlePages = [update[len(update)//2] for update in fixedInvalidUpdates]
+
+  return {
+    'sum of valid updates': sum([int(page) for page in validMiddlePages]),
+    'sum of invalid updates': sum([int(page) for page in invalidMiddlePages])
+  }
 
 def getPageOrder(rules):
   order = defaultdict(set)
@@ -23,19 +32,33 @@ def getPageOrder(rules):
 
 def isUpdateInValidOrder(pagesUpdated, pageOrder):
   for pageIndex, page in enumerate(pagesUpdated):
-    nextPages = pageOrder[page]
-
-    nextPageIndexes = []
-    for nextPage in nextPages:
-      try:
-        nextPageIndexes.append(pagesUpdated.index(nextPage))
-      except ValueError:
-        continue
-
+    nextPageIndexes = getNextPageIndexes(page, pagesUpdated, pageOrder)
     if any([pageIndex > nextPageIndex for nextPageIndex in nextPageIndexes]):
       return False
   return True
 
+def getFixedInvalidOrder(pagesUpdated, pageOrder):
+  fixedUpdate = pagesUpdated.copy()
+  for currentIndex, page in enumerate(pagesUpdated):
+    nextPageIndexes = getNextPageIndexes(page, pagesUpdated, pageOrder)
+    minIndex = min(nextPageIndexes) if len(nextPageIndexes) > 0 else len(pagesUpdated)
+    if currentIndex > minIndex:
+      fixedUpdate.remove(page)
+      fixedUpdate.insert(minIndex, page)
+      if isUpdateInValidOrder(fixedUpdate, pageOrder):
+        return fixedUpdate
+  
+  return getFixedInvalidOrder(fixedUpdate, pageOrder)
+
+def getNextPageIndexes(page, pagesUpdated, pageOrder):
+  nextPages = pageOrder[page]
+  nextPageIndexes = []
+  for nextPage in nextPages:
+    try:
+      nextPageIndexes.append(pagesUpdated.index(nextPage))
+    except ValueError:
+      continue
+  return nextPageIndexes
 
 sample = '''
 47|53
