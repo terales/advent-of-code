@@ -1,32 +1,57 @@
 from collections import namedtuple
 from enum import Enum
+from tqdm import tqdm
 
 GUARD = '^'
 Action = Enum('Action', 'STEP TURN EXIT')
 Direction = Enum('Direction', 'UP RIGHT DOWN LEFT')
 Position = namedtuple('Position', ['x', 'y'])
 Act = namedtuple('Act', ['action', 'newPosition', 'newDirection'])
+INFINITE_LOOP_THRESHOLD = 5
+
+class InfiniteLoopException(Exception):
+    pass
 
 def main(input):
-  map = [list(line) for line in input.split('\n')]
-  visitedMap = [row.copy() for row in map]
+  map, maxPossiblePositions = parseInput(input)
+  visitedPositions = getVisitedPositions(map, maxPossiblePositions)
+  return len(visitedPositions)
 
+def getPositionsToEntrapGuard(input):
+  map, maxPossiblePositions = parseInput(input)
+
+  trapPositions = set()
+  visitedPositions = getVisitedPositions(map, maxPossiblePositions)
+  visitedPositions.remove(getStartingPosition(map))
+  
+  for position in tqdm(visitedPositions):
+    obstructedMap = [row.copy() for row in map]
+    obstructedMap[position.y][position.x] = 'O'
+    try:
+      getVisitedPositions(obstructedMap, maxPossiblePositions)
+    except InfiniteLoopException:
+      trapPositions.add(position)
+
+  return len(trapPositions)
+
+def getVisitedPositions(map, maxPossiblePositions):
   visitedPositions = set()
   startingPosition = getStartingPosition(map)
-  _markVisit(visitedMap, startingPosition)
   visitedPositions.add(startingPosition)
 
   acted = act(map, startingPosition, Direction.UP)
-  _markVisit(visitedMap, acted.newPosition)
+  stepsMade = 0
 
   while acted.action != Action.EXIT:
     if (acted.action == Action.STEP):
       visitedPositions.add(acted.newPosition)
     acted = act(map, acted.newPosition, acted.newDirection)
-    _markVisit(visitedMap, acted.newPosition)
 
-  # use _mapToText(visitedMap) to debug
-  return len(visitedPositions)
+    stepsMade += 1
+    if stepsMade > maxPossiblePositions * INFINITE_LOOP_THRESHOLD:
+      raise InfiniteLoopException(f'Steps made are {INFINITE_LOOP_THRESHOLD} times bigger that possible positions')
+
+  return visitedPositions
 
 def getStartingPosition(map):
   for rowIndex, row in enumerate(map):
@@ -71,9 +96,10 @@ def getNewDirection(direction):
   except IndexError:
     return directions[0]
 
-def _markVisit(map, position):
-  if position:
-    map[position.y][position.x] = 'X'
+def parseInput(text):
+  map = [list(line) for line in text.split('\n')]
+  maxPossiblePositions = text.count('.')
+  return map, maxPossiblePositions
 
 def _mapToText(map):
   text = ''
@@ -98,7 +124,9 @@ sample = '''
 '''.strip()
 
 with open('2024-06-input.txt') as f:
-    firstChallengeInput = f.read()
+    challengeInput = f.read()
 
 print(main(sample))
-print(main(firstChallengeInput))
+print(main(challengeInput))
+print(getPositionsToEntrapGuard(sample))
+print(getPositionsToEntrapGuard(challengeInput))
