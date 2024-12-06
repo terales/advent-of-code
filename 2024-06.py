@@ -1,4 +1,5 @@
 from collections import namedtuple
+from copy import deepcopy
 from enum import Enum
 from tqdm import tqdm
 
@@ -7,36 +8,37 @@ Action = Enum('Action', 'STEP TURN EXIT')
 Direction = Enum('Direction', 'UP RIGHT DOWN LEFT')
 Position = namedtuple('Position', ['x', 'y'])
 Act = namedtuple('Act', ['action', 'newPosition', 'newDirection'])
-INFINITE_LOOP_THRESHOLD = 5
+INFINITE_LOOP_THRESHOLD = 1
 
 class InfiniteLoopException(Exception):
     pass
 
 def main(input):
   map, maxPossiblePositions = parseInput(input)
-  visitedPositions = getVisitedPositions(map, maxPossiblePositions)
+  startingPosition = getStartingPosition(map)
+  visitedPositions = getVisitedPositions(map, startingPosition, maxPossiblePositions)
   return len(visitedPositions)
 
 def getPositionsToEntrapGuard(input):
   map, maxPossiblePositions = parseInput(input)
 
   trapPositions = set()
-  visitedPositions = getVisitedPositions(map, maxPossiblePositions)
+  startingPosition = getStartingPosition(map)
+  visitedPositions = getVisitedPositions(map, startingPosition, maxPossiblePositions)
   visitedPositions.remove(getStartingPosition(map))
   
   for position in tqdm(visitedPositions):
-    obstructedMap = [row.copy() for row in map]
+    obstructedMap = deepcopy(map)
     obstructedMap[position.y][position.x] = 'O'
     try:
-      getVisitedPositions(obstructedMap, maxPossiblePositions)
+      getVisitedPositions(obstructedMap, startingPosition, maxPossiblePositions)
     except InfiniteLoopException:
       trapPositions.add(position)
 
   return len(trapPositions)
 
-def getVisitedPositions(map, maxPossiblePositions):
+def getVisitedPositions(map, startingPosition, maxPossiblePositions):
   visitedPositions = set()
-  startingPosition = getStartingPosition(map)
   visitedPositions.add(startingPosition)
 
   acted = act(map, startingPosition, Direction.UP)
@@ -89,12 +91,15 @@ def getNewPosition(currentPosition, direction):
       return Position(currentPosition.x + 1, currentPosition.y)
 
 def getNewDirection(direction):
-  directions = list(Direction)
-  currentIndex = directions.index(direction)
-  try:
-    return directions[currentIndex + 1]
-  except IndexError:
-    return directions[0]
+  match direction:
+    case Direction.UP:
+      return Direction.RIGHT
+    case Direction.RIGHT:
+      return Direction.DOWN
+    case Direction.DOWN:
+      return Direction.LEFT
+    case Direction.LEFT:
+      return Direction.UP
 
 def parseInput(text):
   map = [list(line) for line in text.split('\n')]
