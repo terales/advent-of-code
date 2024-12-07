@@ -52,3 +52,4 @@ with open('2024-07-input.txt') as f:
 print(main(sample, OPERATORS_FISRT_CHALLENGE))
 print(main(challengeInput, OPERATORS_FISRT_CHALLENGE))
 print(main(sample, OPERATORS_FISRT_CHALLENGE + [concatDigitsOperator]))
+print(main(challengeInput, OPERATORS_FISRT_CHALLENGE + [concatDigitsOperator]))
