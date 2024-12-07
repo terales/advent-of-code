@@ -2,10 +2,10 @@ from collections import namedtuple
 import operator
 from itertools import product
 
-OPERATORS = [operator.add, operator.mul]
+OPERATORS_FISRT_CHALLENGE = [operator.add, operator.mul]
 Equation = namedtuple('Equation', ['test', 'terms'])
 
-def main(input):
+def main(input, operators):
   equationsRaw = [line.split(' ') for line in input.split('\n')]
   
   equations = []
@@ -15,11 +15,11 @@ def main(input):
       terms = [int(termRaw) for termRaw in termsRaw[1:]]
     ))
 
-  return sum(getTruthfulTest(equation) for equation in equations)
+  return sum(getTruthfulTest(equation, operators) for equation in equations)
 
-def getTruthfulTest(equation):
+def getTruthfulTest(equation, operators):
   operations = len(equation.terms) - 1
-  variants = product(OPERATORS, repeat=operations)
+  variants = product(operators, repeat=operations)
 
   for variant in variants:
     result = equation.terms[0]
@@ -45,5 +45,5 @@ sample = '''
 with open('2024-07-input.txt') as f:
     challengeInput = f.read()
 
-print(main(sample))
-print(main(challengeInput))
+print(main(sample, OPERATORS_FISRT_CHALLENGE))
+print(main(challengeInput, OPERATORS_FISRT_CHALLENGE))
