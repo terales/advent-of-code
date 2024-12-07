@@ -2,7 +2,7 @@ from collections import namedtuple
 import operator
 from itertools import product
 
-OPERATORS_FISRT_CHALLENGE = [operator.add, operator.mul]
+OPERATORS_FIRST_CHALLENGE = [operator.add, operator.mul]
 Equation = namedtuple('Equation', ['test', 'terms'])
 
 def main(input, operators):
@@ -49,7 +49,7 @@ sample = '''
 with open('2024-07-input.txt') as f:
     challengeInput = f.read()
 
-print(main(sample, OPERATORS_FISRT_CHALLENGE))
-print(main(challengeInput, OPERATORS_FISRT_CHALLENGE))
-print(main(sample, OPERATORS_FISRT_CHALLENGE + [concatDigitsOperator]))
-print(main(challengeInput, OPERATORS_FISRT_CHALLENGE + [concatDigitsOperator]))
+print(main(sample, OPERATORS_FIRST_CHALLENGE))
+print(main(challengeInput, OPERATORS_FIRST_CHALLENGE))
+print(main(sample, OPERATORS_FIRST_CHALLENGE + [concatDigitsOperator]))
+print(main(challengeInput, OPERATORS_FIRST_CHALLENGE + [concatDigitsOperator]))
