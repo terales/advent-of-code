@@ -30,6 +30,10 @@ def getTruthfulTest(equation, operators):
     
   return 0
 
+def concatDigitsOperator(a, b):
+  result = str(a) + str(b)
+  return int(result)
+
 sample = '''
 190: 10 19
 3267: 81 40 27
@@ -47,3 +51,4 @@ with open('2024-07-input.txt') as f:
 
 print(main(sample, OPERATORS_FISRT_CHALLENGE))
 print(main(challengeInput, OPERATORS_FISRT_CHALLENGE))
+print(main(sample, OPERATORS_FISRT_CHALLENGE + [concatDigitsOperator]))
