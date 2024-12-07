@@ -42,5 +42,8 @@ sample = '''
 292: 11 6 16 20
 '''.strip()
 
+with open('2024-07-input.txt') as f:
+    challengeInput = f.read()
 
 print(main(sample))
+print(main(challengeInput))
