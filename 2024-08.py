@@ -22,10 +22,14 @@ def main(input, verbose=False):
     for pair in permutations(positions, 2):
       nextAntinode = getNextAntinodePosition(pair, rowBoundary, columnBoundary)
       if nextAntinode:
-        antinodes.add(nextAntinode)
-        if verbose: _printAntinode(map, pair, nextAntinode)
+        continue
+      antinodes.add(nextAntinode)
+      if verbose:
+        _printAntinode(map, pair, nextAntinode)
 
-  return len(antinodes)
+  return {
+    'Two antinode per pair: ': len(antinodes),
+  }
 
 def getNextAntinodePosition(pair, rowBoundary, columnBoundary):
   a, b = pair
