@@ -18,24 +18,35 @@ def main(input, verbose=False):
         antennas[cell].add(position)
 
   antinodes = set()
+  antinodesAllResonantHarmonics = set()
   for positions in antennas.values():
     for pair in permutations(positions, 2):
-      nextAntinode = getNextAntinodePosition(pair, rowBoundary, columnBoundary)
-      if nextAntinode:
+      nextAntinode = getNextAntinodePosition(pair, ANTINODE_DISTANCE_MULTIPLIER, rowBoundary, columnBoundary)
+      if nextAntinode is None:
         continue
       antinodes.add(nextAntinode)
+      antinodesAllResonantHarmonics.add(nextAntinode)
+
+      resonantHarmonicsAntinodes = getResonantHarmonicsAntinodes(pair, rowBoundary, columnBoundary)
+      antinodesAllResonantHarmonics.update(resonantHarmonicsAntinodes)
       if verbose:
         _printAntinode(map, pair, nextAntinode)
+        [_printAntinode(map, pair, antinode) for antinode in list(resonantHarmonicsAntinodes)]
+
+  for positions in antennas.values():
+    if len(positions) > 1:
+      antinodesAllResonantHarmonics.update(positions)
 
   return {
     'Two antinode per pair: ': len(antinodes),
+    'Antinodes accounting for resonant harmonics': len(antinodesAllResonantHarmonics)
   }
 
-def getNextAntinodePosition(pair, rowBoundary, columnBoundary):
+def getNextAntinodePosition(pair, distance, rowBoundary, columnBoundary):
   a, b = pair
   antinode = Position(
-    row=getNextPointCoordinate(a.row, b.row),
-    column=getNextPointCoordinate(a.column, b.column)
+    row=getNextPointCoordinate(a.row, b.row, distance),
+    column=getNextPointCoordinate(a.column, b.column, distance)
   )
   if not 0 <= antinode.row < rowBoundary:
     return None
@@ -43,9 +54,20 @@ def getNextAntinodePosition(pair, rowBoundary, columnBoundary):
     return None
   return antinode
 
-def getNextPointCoordinate(first, second):
+def getNextPointCoordinate(first, second, distance):
   '''Found formula at https://math.stackexchange.com/a/2109383'''
-  return first - ANTINODE_DISTANCE_MULTIPLIER * (first - second)
+  return first - distance * (first - second)
+
+def getResonantHarmonicsAntinodes(pair, rowBoundary, columnBoundary):
+  antinodes = set()
+  distanceIncrement = ANTINODE_DISTANCE_MULTIPLIER + 1
+  while True:
+    nextAntinode = getNextAntinodePosition(pair, distanceIncrement, rowBoundary, columnBoundary)
+    if nextAntinode is None:
+      break
+    antinodes.add(nextAntinode)
+    distanceIncrement += 1
+  return antinodes
 
 def _printAntinode(map, pair, antinode):
   markedMap = deepcopy(map)
@@ -81,6 +103,19 @@ sample = '''
 with open('2024-08-input.txt') as f:
     challengeInput = f.read()
 
+sampleResonantHarmonics = '''
+T.........
+...T......
+.T........
+..........
+..........
+..........
+..........
+..........
+..........
+..........
+'''.strip()
 
 print(main(sample))
 print(main(challengeInput))
+print(main(sampleResonantHarmonics))
