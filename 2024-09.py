@@ -18,9 +18,9 @@ def compact_layout(disk):
   while True:
     try:
       fist_empty_index = compacted.index(None)
-    except ValueError:
+      compacted[fist_empty_index] = compacted.pop()
+    except (ValueError, IndexError):
       break
-    compacted[fist_empty_index] = compacted.pop()    
   return compacted
 
 def calc_checksum(disk):
@@ -41,6 +41,9 @@ sample = '''
 2333133121414131402
 '''.strip()
 
+with open('2024-09-input.txt') as f:
+    challengeInput = f.read()
+
 print(_test(
   'layout',
   '00...111...2...333.44.5555.6666.777.888899',
@@ -57,4 +60,4 @@ print(_test(
   calc_checksum(compact_layout(build_layout(sample)))
 ))
 
-print(main(sample))
+print('Challenge one:', main(challengeInput))
