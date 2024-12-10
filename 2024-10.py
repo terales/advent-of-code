@@ -32,7 +32,7 @@ def main(input):
     potentiallyPleasantTrails = newTrails
   
   scores = set([(trail[0], trail[-1]) for trail in potentiallyPleasantTrails])
-  return len(scores)
+  return len(scores), len(potentiallyPleasantTrails)
 
 def getStartingPositions(map):
   positions = []
@@ -67,7 +67,7 @@ with open('2024-10-samples.yaml') as f:
   samples = load(f, Loader=SafeLoader)
 
 for sampleIndex, sample in enumerate(samples):
-  actual = main(sample['input'].strip())
+  actual = main(sample['input'].strip())[0]
   print('Test {isPassing}\nExpected: {expected},\nActual:   {actual}\n'.format(
     isPassing = '🟢' if sample['expected'] == actual else '❌',
     expected = sample['expected'],
@@ -77,4 +77,4 @@ for sampleIndex, sample in enumerate(samples):
 with open('2024-10-input.txt') as f:
   challengeInput = f.read()
 
-print('First challenge:', main(challengeInput.strip()))
+print('Day challenges:', main(challengeInput.strip()))
