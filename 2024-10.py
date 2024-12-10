@@ -8,17 +8,12 @@ MAX_STEPS = 9
 Position = namedtuple('Position', 'row column')
 
 def main(input):
-  map = []
-  for line in input.split('\n'):
-    row = []
-    for character in line:
-      row.append(int(character if character != '.' else '-1'))
-    map.append(row)
-
+  map = buildMap(input)
   potentiallyPleasantTrails = [[trailhead] for trailhead in getStartingPositions(map)]
 
   for step in range(0, MAX_STEPS):
-    newTrails = []
+    exploredTrails = []
+
     for trail in potentiallyPleasantTrails:
       if len(trail) < step:
         continue
@@ -27,12 +22,21 @@ def main(input):
       if len(nextPleasantSteps) == 0:
         continue
 
-      newTrails += [trail + [step] for step in nextPleasantSteps]
+      exploredTrails += [trail + [step] for step in nextPleasantSteps]
 
-    potentiallyPleasantTrails = newTrails
+    potentiallyPleasantTrails = exploredTrails
   
   scores = set([(trail[0], trail[-1]) for trail in potentiallyPleasantTrails])
   return len(scores), len(potentiallyPleasantTrails)
+
+def buildMap(text):
+  map = []
+  for line in text.split('\n'):
+    row = []
+    for character in line:
+      row.append(int(character if character != '.' else '-1'))
+    map.append(row)
+  return map
 
 def getStartingPositions(map):
   positions = []
@@ -73,6 +77,7 @@ for sampleIndex, sample in enumerate(samples):
     expected = sample['expected'],
     actual = actual
   ))
+
 
 with open('2024-10-input.txt') as f:
   challengeInput = f.read()
