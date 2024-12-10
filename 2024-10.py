@@ -73,3 +73,8 @@ for sampleIndex, sample in enumerate(samples):
     expected = sample['expected'],
     actual = actual
   ))
+
+with open('2024-10-input.txt') as f:
+  challengeInput = f.read()
+
+print('First challenge:', main(challengeInput.strip()))
