@@ -21,7 +21,7 @@ def countStonesAfterBlink(stone, blinks):
     
   digits = len('%i' % stone) # Fastest way to get number of digits in the number https://stackoverflow.com/a/54054183
   if digits % 2 == 0:
-      # Algorithmic way to split number by digits https://www.reddit.com/r/learnpython/comments/10iw55k/comment/j5ien9m
+      # Split number by digits without converting to a string https://www.reddit.com/r/learnpython/comments/10iw55k/comment/j5ien9m
       halfLen = digits // 2
       halfLenDivider = 10 ** halfLen
       leftStones = countStonesAfterBlink(stone // halfLenDivider, blinksLeft)
