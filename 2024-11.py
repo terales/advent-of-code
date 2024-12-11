@@ -55,3 +55,8 @@ for test in samples['stones']:
 for test in samples['count']:
   actual = main(test['input'], test['blinks'])
   print(_test(test, actual))
+
+with open('2024-11-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('First challenge:', main(challengeInput, blinks=25))
