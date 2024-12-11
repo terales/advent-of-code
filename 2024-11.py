@@ -3,9 +3,6 @@ from yaml import load, SafeLoader
 
 UNCHANGED_STONE_MULTIPLIER = 2024
 
-def buildStones(input):
-  return list(map(int, input.split(' ')))
-
 def main(input, blinks):
   stones = list(map(int, input.split(' ')))
   stonesCount = 0
@@ -56,6 +53,7 @@ for test in samples:
 
 with open('2024-11-input.txt') as f:
   challengeInput = f.read().strip()
+
 
 print('First challenge:', main(challengeInput, blinks=25))
 print('Second challenge:', main(challengeInput, blinks=75))
