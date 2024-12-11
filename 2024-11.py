@@ -11,27 +11,27 @@ def main(input, blinks):
   return len(changedStones)
 
 def blink(stones, blinks):
-  if blinks <= 0:
-    return stones
-  
-  changedStones = []
+  currentStones = stones
+  for blink in reversed(range(1, blinks + 1)):
+    changedStones = []
+    for stone in currentStones:
+      if stone == 0:
+        changedStones.append(1)
+        continue
+      
+      digits = len('%i' % stone)
+      if not digits & 1:
+        # Fastest way to get number of digits in the number https://stackoverflow.com/a/54054183
+        # Algorithmic way to split number by digits https://www.reddit.com/r/learnpython/comments/10iw55k/comment/j5ien9m
+        halfLen = digits // 2
+        halfLenDivider = 10 ** halfLen
+        changedStones.append(stone // halfLenDivider)
+        changedStones.append(stone % halfLenDivider)
+        continue
 
-  for stone in stones:
-    if stone == 0:
-      changedStones.append(1)
-      continue
-
-    strStone = str(stone)
-    lenStone = len(strStone)
-    if lenStone % 2 == 0:
-      halfLen = int(lenStone / 2)
-      changedStones.append(int(strStone[:halfLen]))
-      changedStones.append(int(strStone[halfLen:]))
-      continue
-
-    changedStones.append(stone * UNCHANGED_STONE_MULTIPLIER)
-  
-  return blink(changedStones, blinks - 1)
+      changedStones.append(stone * UNCHANGED_STONE_MULTIPLIER)
+    currentStones = changedStones
+  return currentStones
 
 def _test(test, actual):
   isPassing = test['expected'] == actual
@@ -60,3 +60,4 @@ with open('2024-11-input.txt') as f:
   challengeInput = f.read().strip()
 
 print('First challenge:', main(challengeInput, blinks=25))
+print('Second challenge:', main(challengeInput, blinks=75))
