@@ -147,7 +147,7 @@ def _printTest(test, actual):
   )
   message = '{isPassing}{testData}'.format(
     input = test['input'],
-    isPassing = '✅' if isPassing else '❌ ',
+    isPassing = '✅' if isPassing else '\n\n❌ ',
     testData = testData if not isPassing else ''
   )
   end = '' if isPassing else '\n'
