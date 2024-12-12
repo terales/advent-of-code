@@ -29,7 +29,7 @@ def gatherRegions(originalGarden):
   regions = []
 
   while(len(garden) > 0):
-    firstPosition, firstPlant = getFirstPlot(garden)
+    firstPosition, firstPlant = next(iter(garden.items()))
 
     positions = extractRegion(firstPosition, firstPlant, garden, set())
     regions.append(Region(firstPlant, positions))
@@ -41,7 +41,7 @@ def gatherRegions(originalGarden):
 
 def extractRegion(currentPosition, currentPlant, garden, regionPositions):
   regionPositions.add(currentPosition) 
-  neighbors = getNeighboringPositions(currentPosition, garden)
+  neighbors = getNeighboringPositions(currentPosition, set(garden))
 
   for neighboringPosition in neighbors:
     samePlant = currentPlant == garden.get(neighboringPosition, '')
@@ -101,16 +101,16 @@ def countSides(region):
       isTopRightCorner = all([leftExists, bottomExists]) and not all([topExists, rightExists]) # ⌝
       isTopLeftCorner = all([rightExists, bottomExists]) and not all([topExists, leftExists])  # ⌜
       isBottomLeftCorner = all([rightExists, topExists]) and not all([bottomExists, leftExists])  # ⌞
-      isBottomRightCorner = all([leftExists, topExists]) and not all([bottomExists, rightExists])  # ⌟
+      isBottomRightCorner = all([leftExists, topExists]) and not all([bottomExists, rightExists]) # ⌟
       if any([isTopRightCorner, isTopLeftCorner, isBottomLeftCorner, isBottomRightCorner]):
         vertices += 1
 
     # Check if an interior corner
     if numOfDiagonalPlots < MAX_PLOTS_IN_CROSS:
-      looksAtTopRight = all([topExists, rightExists, not topRightExists])
-      looksAtTopLeft = all([topExists, leftExists, not topLeftExists])
-      looksAtBottomRight = all([bottomExists, rightExists, not bottomRightExists])
-      looksAtBottomLeft = all([bottomExists, leftExists, not bottomLeftExists])
+      looksAtTopRight = all([topExists, rightExists, not topRightExists]) # ⌞
+      looksAtTopLeft = all([topExists, leftExists, not topLeftExists])    # ⌟
+      looksAtBottomRight = all([bottomExists, rightExists, not bottomRightExists]) # ⌜
+      looksAtBottomLeft = all([bottomExists, leftExists, not bottomLeftExists])    # ⌝
       vertices += len(list(filter(None, [looksAtTopRight, looksAtTopLeft, looksAtBottomRight, looksAtBottomLeft])))
 
   return vertices
@@ -124,18 +124,12 @@ def getNeighboringPositions(position, area):
   if len(area) == 0:
     return set()
 
-  neighbors = {
+  return area.intersection({
     position + 1,
     position - 1,
     position + 1j,
     position - 1j,
-  }
-
-  return neighbors.intersection(area)
-
-def getFirstPlot(garden):
-  for position, plant in garden.items():
-    return position, plant
+  })
 
 
 def _printTest(test, actual):
@@ -152,6 +146,7 @@ def _printTest(test, actual):
   )
   end = '' if isPassing else '\n'
   print(message, end=end)
+
 
 with open('2024-12-samples.yaml') as f:
   samples = load(f, Loader=SafeLoader)
