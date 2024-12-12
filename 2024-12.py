@@ -83,3 +83,9 @@ with open('2024-12-samples.yaml') as f:
 for test in samples:
   actual = main(test['input'].strip())
   print(_test(test, actual))
+
+
+with open('2024-12-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('First challenge:', main(challengeInput))
