@@ -24,6 +24,72 @@ sides:
     CCC
     C.C
     CCC
+- expected: 10
+  input: |
+    RRRR.
+    RRRR.
+    ..RRR
+    ..R..
+- expected: 22
+  input: |
+    ...CC.
+    ...CCC
+    ..CC..
+    CCC...
+    .C....
+    .CC...
+    ..C...
+- expected: 12
+  input: |
+    .FF
+    ..F
+    FFF
+    FFF
+    .F.
+- expected: 10
+  input: |
+    VV..
+    VV..
+    VVVV
+    VV.V
+    VV..
+- expected: 12
+  input: |
+    .J.
+    JJ.
+    .JJ
+    .JJ
+    .JJ
+    .J.
+    .J.
+- expected: 4
+  input: |
+    C
+- expected: 8
+  input: |
+    ..E
+    .EE
+    .EE
+    .EE
+    EEE
+    EEE
+- expected: 16
+  input: |
+    .I...
+    .III.
+    IIIII
+    III.I
+    ..I..
+- expected: 6
+  input: |
+    M..
+    M..
+    MMM
+- expected: 6
+  input: |
+    S.
+    SS
+
 bulkPrices:
 - expected: 80
   input: |

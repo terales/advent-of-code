@@ -67,6 +67,9 @@ def getBulkPrice(regions):
   return price
 
 def countSides(region):
+  if len(region.positions) == 1:
+    return 4
+
   vertices = 0
   positions = region.positions
   for position in positions:
@@ -136,38 +139,44 @@ def getFirstPlot(garden):
 
 def _test(test, actual):
   isPassing = test['expected'] == actual
-  testData = 'Expected: {expected},\nActual:   {actual}\n'.format(
+  testData = 'Input:\n{input}\nExpected: {expected},\nActual:   {actual}\n'.format(
+    input = test['input'],
     expected = test['expected'],
     actual = actual
   )
-  return 'Test {isPassing}\n{testData}'.format(
+  return '{isPassing}{testData}'.format(
     input = test['input'],
-    isPassing = '🟢' if isPassing else '❌',
+    isPassing = '✅' if isPassing else '❌ ',
     testData = testData if not isPassing else ''
   )
 
 with open('2024-12-samples.yaml') as f:
   samples = load(f, Loader=SafeLoader)
 
-# for test in samples:
-#   actual = firstChallenge(test['input'].strip())
-#   print(_test(test, actual))
+print('Retail prices')
+for test in samples:
+  actual = firstChallenge(test['input'].strip())
+  print(_test(test, actual))
 
-
-# with open('2024-12-input.txt') as f:
-#   challengeInput = f.read().strip()
-
-# print('First challenge:', main(challengeInput))
 
 with open('2024-12-samples2.yaml') as f:
   samples2 = load(f, Loader=SafeLoader)
 
+print('Sides')
 for test in samples2['sides']:
   garden = buildGarden(test['input'].strip())
   regions = gatherRegions(garden)
   sidesCount = sum(countSides(region) for region in regions)
   print(_test(test, sidesCount))
 
+print('Bulk prices')
 for test in samples2['bulkPrices']:
   actual = secondChallenge(test['input'])
   print(_test(test, actual))
+
+
+with open('2024-12-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('First challenge:', firstChallenge(challengeInput))
+print('Second challenge:', secondChallenge(challengeInput))
