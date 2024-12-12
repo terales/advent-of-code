@@ -1,6 +1,7 @@
 from collections import namedtuple
 from copy import deepcopy
 from yaml import load, SafeLoader
+from termcolor import colored
 
 Region = namedtuple('Region', 'plant positions')
 NUM_OF_SINGLE_PLOT_BORDERS = 4
@@ -137,18 +138,20 @@ def getFirstPlot(garden):
     return position, plant
 
 
-def _test(test, actual):
+def _printTest(test, actual):
   isPassing = test['expected'] == actual
   testData = 'Input:\n{input}\nExpected: {expected},\nActual:   {actual}\n'.format(
     input = test['input'],
     expected = test['expected'],
     actual = actual
   )
-  return '{isPassing}{testData}'.format(
+  message = '{isPassing}{testData}'.format(
     input = test['input'],
     isPassing = '✅' if isPassing else '❌ ',
     testData = testData if not isPassing else ''
   )
+  end = '' if isPassing else '\n'
+  print(message, end=end)
 
 with open('2024-12-samples.yaml') as f:
   samples = load(f, Loader=SafeLoader)
@@ -156,7 +159,8 @@ with open('2024-12-samples.yaml') as f:
 print('Retail prices')
 for test in samples:
   actual = firstChallenge(test['input'].strip())
-  print(_test(test, actual))
+  _printTest(test, actual)
+print()
 
 
 with open('2024-12-samples2.yaml') as f:
@@ -166,17 +170,20 @@ print('Sides')
 for test in samples2['sides']:
   garden = buildGarden(test['input'].strip())
   regions = gatherRegions(garden)
-  sidesCount = sum(countSides(region) for region in regions)
-  print(_test(test, sidesCount))
+  sidesCount = sum(countSides(region) for region in regions if region.plant != '.')
+  _printTest(test, sidesCount)
+print()
 
 print('Bulk prices')
 for test in samples2['bulkPrices']:
   actual = secondChallenge(test['input'])
-  print(_test(test, actual))
+  _printTest(test, actual)
+print()
 
 
 with open('2024-12-input.txt') as f:
   challengeInput = f.read().strip()
 
-print('First challenge:', firstChallenge(challengeInput))
-print('Second challenge:', secondChallenge(challengeInput))
+print()
+print('First challenge:', colored(firstChallenge(challengeInput), 'green'))
+print('Second challenge:', colored(secondChallenge(challengeInput), 'green'))
