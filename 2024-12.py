@@ -1,36 +1,38 @@
 from collections import namedtuple
+from copy import deepcopy
 from yaml import load, SafeLoader
 
 Region = namedtuple('Region', 'plant positions')
 NUM_OF_SINGLE_PLOT_BORDERS = 4
 
 def main(input):
+  garden = buildGarden(input)
+  regions = gatherRegions(garden)
+  return getRetailPrice(regions)
+
+def buildGarden(text):
   garden = {}
-  for rowIndex, row in enumerate(input.split('\n')):
+  for rowIndex, row in enumerate(text.split('\n')):
     for columntIndex, cell in enumerate(row):
       garden[complex(columntIndex, rowIndex)] = cell
+  return garden
 
+def gatherRegions(originalGarden):
+  garden = deepcopy(originalGarden)
   regions = []
+
   while(len(garden) > 0):
     firstPosition, firstPlant = getFirstPlot(garden)
 
-    region = Region(
-      plant=firstPlant,
-      positions=getRegion(firstPosition, firstPlant, garden, set())
-    )
-    regions.append(region)
+    positions = extractRegion(firstPosition, firstPlant, garden, set())
+    regions.append(Region(firstPlant, positions))
 
-    for attributedPosition in region.positions:
+    for attributedPosition in positions:
       garden.pop(attributedPosition, None)
 
-  totalFencePrice = 0
-  for region in regions:
-    area = len(region.positions)
-    perimeter = calcPerimeter(region)
-    totalFencePrice += area * perimeter
-  return totalFencePrice
+  return regions
 
-def getRegion(currentPosition, currentPlant, garden, regionPositions):
+def extractRegion(currentPosition, currentPlant, garden, regionPositions):
   regionPositions.add(currentPosition) 
   neighbors = getNeighboringPositions(currentPosition, garden)
 
@@ -38,9 +40,17 @@ def getRegion(currentPosition, currentPlant, garden, regionPositions):
     samePlant = currentPlant == garden.get(neighboringPosition, '')
     alreadyInRegion = neighboringPosition in regionPositions
     if samePlant and not alreadyInRegion:
-      regionPositions.update(getRegion(neighboringPosition, currentPlant, garden, regionPositions))
+      regionPositions.update(extractRegion(neighboringPosition, currentPlant, garden, regionPositions))
 
   return regionPositions
+
+def getRetailPrice(regions):
+  totalFencePrice = 0
+  for region in regions:
+    area = len(region.positions)
+    perimeter = calcPerimeter(region)
+    totalFencePrice += area * perimeter
+  return totalFencePrice
 
 def calcPerimeter(region):
   totalPlotBorders = len(region.positions) * NUM_OF_SINGLE_PLOT_BORDERS
