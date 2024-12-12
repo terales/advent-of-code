@@ -1,0 +1,29 @@
+- expected: 140
+  input: |
+    AAAA
+    BBCD
+    BBCC
+    EEEC
+- expected: 772
+  input: |
+    OOOOO
+    OXOXO
+    OOOOO
+    OXOXO
+    OOOOO
+- expected: 1930
+  input: |
+    RRRRIICCFF
+    RRRRIICCCF
+    VVRRRCCFFF
+    VVRCCCJFFF
+    VVVVCJJCFE
+    VVIVCCJJEE
+    VVIIICJJEE
+    MIIIIIJJEE
+    MIIISIJEEE
+    MMMISSJEEE
+- expected: 28
+  input: |
+    .C
+    CC
