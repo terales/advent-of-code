@@ -1,0 +1,67 @@
+sides:
+- expected: 4
+  input: |
+    AAAA
+- expected: 4
+  input: |
+    BB
+    BB
+- expected: 8
+  input: |
+    C.
+    CC
+    .C
+- expected: 8
+  input: |
+    C.C
+    CCC
+- expected: 8
+  input: |
+    .C.
+    CCC
+- expected: 8
+  input: |
+    CCC
+    C.C
+    CCC
+bulkPrices:
+- expected: 80
+  input: |
+    AAAA
+    BBCD
+    BBCC
+    EEEC
+- expected: 436
+  input: |
+    OOOOO
+    OXOXO
+    OOOOO
+    OXOXO
+    OOOOO
+- expected: 236
+  input: |
+    EEEEE
+    EXXXX
+    EEEEE
+    EXXXX
+    EEEEE
+- expected: 368
+  input: |
+    AAAAAA
+    AAABBA
+    AAABBA
+    ABBAAA
+    ABBAAA
+    AAAAAA
+- expected: 1206
+  input: |
+    RRRRIICCFF
+    RRRRIICCCF
+    VVRRRCCFFF
+    VVRCCCJFFF
+    VVVVCJJCFE
+    VVIVCCJJEE
+    VVIIICJJEE
+    MIIIIIJJEE
+    MIIISIJEEE
+    MMMISSJEEE

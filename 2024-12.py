@@ -4,11 +4,17 @@ from yaml import load, SafeLoader
 
 Region = namedtuple('Region', 'plant positions')
 NUM_OF_SINGLE_PLOT_BORDERS = 4
+MAX_PLOTS_IN_CROSS = 4
 
-def main(input):
+def firstChallenge(input):
   garden = buildGarden(input)
   regions = gatherRegions(garden)
   return getRetailPrice(regions)
+
+def secondChallenge(input):
+  garden = buildGarden(input)
+  regions = gatherRegions(garden)
+  return getBulkPrice(regions)
 
 def buildGarden(text):
   garden = {}
@@ -45,12 +51,65 @@ def extractRegion(currentPosition, currentPlant, garden, regionPositions):
   return regionPositions
 
 def getRetailPrice(regions):
-  totalFencePrice = 0
+  price = 0
   for region in regions:
     area = len(region.positions)
     perimeter = calcPerimeter(region)
-    totalFencePrice += area * perimeter
-  return totalFencePrice
+    price += area * perimeter
+  return price
+
+def getBulkPrice(regions):
+  price = 0
+  for region in regions:
+    area = len(region.positions)
+    sides = countSides(region)
+    price += area * sides
+  return price
+
+def countSides(region):
+  vertices = 0
+  positions = region.positions
+  for position in positions:
+    topExists = (position - 1j) in positions
+    bottomExists = (position + 1j) in positions
+    leftExists = (position - 1) in positions
+    rightExists = (position + 1) in positions
+
+    topRightExists = (position - 1j + 1) in positions
+    topLeftExists = (position - 1j - 1) in positions
+    bottomRightExists = (position + 1j + 1) in positions
+    bottomLeftExists = (position + 1j - 1) in positions
+
+    numOfNeighbors = len(list(filter(None, [topExists, bottomExists, leftExists, rightExists])))
+    numOfDiagonalPlots = len(list(filter(None, [topRightExists, topLeftExists, bottomRightExists, bottomLeftExists])))
+
+    # Definitely an innner plot
+    if numOfNeighbors == MAX_PLOTS_IN_CROSS and numOfDiagonalPlots == MAX_PLOTS_IN_CROSS:
+      continue
+
+    # Two corners at one plot
+    if numOfNeighbors == 1:
+      vertices += 2
+      continue
+
+    # Could be an exterior corner
+    if numOfNeighbors == 2:
+      isTopRightCorner = all([leftExists, bottomExists]) and not all([topExists, rightExists]) # ⌝
+      isTopLeftCorner = all([rightExists, bottomExists]) and not all([topExists, leftExists])  # ⌜
+      isBottomLeftCorner = all([rightExists, topExists]) and not all([bottomExists, leftExists])  # ⌞
+      isBottomRightCorner = all([leftExists, topExists]) and not all([bottomExists, rightExists])  # ⌟
+      if any([isTopRightCorner, isTopLeftCorner, isBottomLeftCorner, isBottomRightCorner]):
+        vertices += 1
+
+    # Check if an interior corner
+    if numOfDiagonalPlots < MAX_PLOTS_IN_CROSS:
+      looksAtTopRight = all([topExists, rightExists, not topRightExists])
+      looksAtTopLeft = all([topExists, leftExists, not topLeftExists])
+      looksAtBottomRight = all([bottomExists, rightExists, not bottomRightExists])
+      looksAtBottomLeft = all([bottomExists, leftExists, not bottomLeftExists])
+      vertices += len(list(filter(None, [looksAtTopRight, looksAtTopLeft, looksAtBottomRight, looksAtBottomLeft])))
+
+  return vertices
 
 def calcPerimeter(region):
   totalPlotBorders = len(region.positions) * NUM_OF_SINGLE_PLOT_BORDERS
@@ -90,12 +149,25 @@ def _test(test, actual):
 with open('2024-12-samples.yaml') as f:
   samples = load(f, Loader=SafeLoader)
 
-for test in samples:
-  actual = main(test['input'].strip())
+# for test in samples:
+#   actual = firstChallenge(test['input'].strip())
+#   print(_test(test, actual))
+
+
+# with open('2024-12-input.txt') as f:
+#   challengeInput = f.read().strip()
+
+# print('First challenge:', main(challengeInput))
+
+with open('2024-12-samples2.yaml') as f:
+  samples2 = load(f, Loader=SafeLoader)
+
+for test in samples2['sides']:
+  garden = buildGarden(test['input'].strip())
+  regions = gatherRegions(garden)
+  sidesCount = sum(countSides(region) for region in regions)
+  print(_test(test, sidesCount))
+
+for test in samples2['bulkPrices']:
+  actual = secondChallenge(test['input'])
   print(_test(test, actual))
-
-
-with open('2024-12-input.txt') as f:
-  challengeInput = f.read().strip()
-
-print('First challenge:', main(challengeInput))
