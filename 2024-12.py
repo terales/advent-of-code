@@ -131,7 +131,7 @@ def getNeighboringPositions(position, area):
     position - 1j,
   }
 
-  return set.intersection(neighbors, area)
+  return neighbors.intersection(area)
 
 def getFirstPlot(garden):
   for position, plant in garden.items():
