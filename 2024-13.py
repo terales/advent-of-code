@@ -1,7 +1,7 @@
 from collections import namedtuple
 from itertools import product
-import re
 from string import Template
+import re
 from termcolor import colored
 
 Machine = namedtuple('Machine', 'a b prize', defaults=[0j,0j,0j])
@@ -48,7 +48,6 @@ def secondChallenge(input):
 
     if machine.prize == arrivedAt:
       totalMinCost += COST['a'] * aPressed + COST['b'] * bPressed
-
   return totalMinCost
 
 def calcCost(aPressed, bPressed):
