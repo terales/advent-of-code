@@ -31,24 +31,15 @@ def main(input):
     ))
 
   for machine in machines:
-    maxA = getMaxReasonablePresses(machine.a, machine.prize)
-    maxB = getMaxReasonablePresses(machine.b, machine.prize)
-
-    if maxA == 0 and maxB == 0:
-      continue
-
-    aPositions = [machine.a * presses for presses in reversed(range(0, maxA))]
-    bPositions = [machine.b * presses for presses in reversed(range(0, maxB))]
-
     costs = []
-    for combination in product(aPositions, bPositions):
-      aPressed = combination[0].real / machine.a.real
-      bPressed = combination[1].real / machine.b.real
-
-      arrivedAt = combination[0] + combination[1]
+    aPositions = [machine.a * presses for presses in reversed(range(0, MAX_BUTTON_PRESSES + 1))]
+    bPositions = [machine.b * presses for presses in reversed(range(0, MAX_BUTTON_PRESSES + 1))]
+    
+    for a, b in product(aPositions, bPositions):
+      arrivedAt = a + b
       if machine.prize == arrivedAt:
-        aPressed = combination[0].real / machine.a.real
-        bPressed = combination[1].real / machine.b.real
+        aPressed = a.real / machine.a.real
+        bPressed = b.real / machine.b.real
         gameCost = COST['a'] * aPressed + COST['b'] * bPressed
         costs.append(gameCost)
 
@@ -56,12 +47,6 @@ def main(input):
 
   return totalMinCost
 
-def getMaxReasonablePresses(button, prize):
-  maxPress = complex(prize.real / button.real, prize.imag / button.imag)
-  return max(
-    round(maxPress.real if maxPress.real <= MAX_BUTTON_PRESSES else 0),
-    round(maxPress.imag if maxPress.imag <= MAX_BUTTON_PRESSES else 0),
-  )
 
 sample = '''
 Button A: X+94, Y+34
