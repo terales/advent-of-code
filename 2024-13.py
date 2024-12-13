@@ -4,49 +4,74 @@ import re
 from string import Template
 from termcolor import colored
 
-MAX_BUTTON_PRESSES = 100
+Machine = namedtuple('Machine', 'a b prize', defaults=[0j,0j,0j])
+FIRST_CHALLENGE_MAX_BUTTON_PRESSES = 100
+SECOND_CHALLENGE_PRIZE_INCREASE = 10000000000000
 COST = {
   'a': 3,
-  'b': 1
+  'b': 1,
 }
-Machine = namedtuple('Machine', 'a b prize', defaults=[0j,0j,0j])
 
-def main(input):
-  machines = []
+def firstChallenge(input):
+  machines = buildMachines(input)
   totalMinCost = 0
+
+  for machine in machines:
+    costs = []
+    aPositions = [machine.a * presses for presses in reversed(range(0, FIRST_CHALLENGE_MAX_BUTTON_PRESSES + 1))]
+    bPositions = [machine.b * presses for presses in reversed(range(0, FIRST_CHALLENGE_MAX_BUTTON_PRESSES + 1))]
+      
+    for a, b in product(aPositions, bPositions):
+      arrivedAt = a + b
+      if machine.prize == arrivedAt:
+        aPressed = a.real / machine.a.real
+        bPressed = b.real / machine.b.real
+        costs.append(calcCost(aPressed, bPressed))
+    
+    totalMinCost += round(min(costs)) if len(costs) > 0 else 0
+  return totalMinCost
+
+def secondChallenge(input):
+  machines = buildMachines(input, SECOND_CHALLENGE_PRIZE_INCREASE)
+  totalMinCost = 0
+
+  for machine in machines:
+    bDividend = machine.prize.real * machine.a.imag - machine.a.real * machine.prize.imag
+    bDivisor = machine.a.real * machine.b.imag - machine.b.real * machine.a.imag
+    bPressed = round(abs(bDividend / bDivisor)) if bDivisor != 0 else 0
+
+    aDividend = machine.prize.real - machine.prize.imag - (machine.b.real - machine.b.imag) * bPressed
+    aDivisor = machine.a.real - machine.a.imag
+    aPressed = round(abs(aDividend / aDivisor)) if aDivisor != 0 else 0
+
+    arrivedAt = machine.a * aPressed + machine.b * bPressed
+
+    if machine.prize == arrivedAt:
+      totalMinCost += COST['a'] * aPressed + COST['b'] * bPressed
+
+  return totalMinCost
+
+def calcCost(aPressed, bPressed):
+  return COST['a'] * aPressed + COST['b'] * bPressed
+
+def buildMachines(text, increasePrizePositionBy=0):
+  machines = []
 
   btnRegexTemplate = Template('Button $btn: X\+(?P<real>\d+), Y\+(?P<imag>\d+)')
   aRegex = re.compile(btnRegexTemplate.substitute(btn='A'))
   bRegex = re.compile(btnRegexTemplate.substitute(btn='B'))
   prizeRegex = re.compile('Prize: X=(?P<real>\d+), Y=(?P<imag>\d+)')
 
-  for machinesRaw in input.split('\n\n'):
+  for machinesRaw in text.split('\n\n'):
     aDict = aRegex.search(machinesRaw).groupdict()
     bDict = bRegex.search(machinesRaw).groupdict()
     prizeDict = prizeRegex.search(machinesRaw).groupdict()
     machines.append(Machine(
       a=complex(int(aDict['real']), int(aDict['imag'])),
       b=complex(int(bDict['real']), int(bDict['imag'])),
-      prize=complex(int(prizeDict['real']), int(prizeDict['imag'])),
+      prize=complex(int(prizeDict['real']) + increasePrizePositionBy, int(prizeDict['imag']) + increasePrizePositionBy),
     ))
-
-  for machine in machines:
-    costs = []
-    aPositions = [machine.a * presses for presses in reversed(range(0, MAX_BUTTON_PRESSES + 1))]
-    bPositions = [machine.b * presses for presses in reversed(range(0, MAX_BUTTON_PRESSES + 1))]
-    
-    for a, b in product(aPositions, bPositions):
-      arrivedAt = a + b
-      if machine.prize == arrivedAt:
-        aPressed = a.real / machine.a.real
-        bPressed = b.real / machine.b.real
-        gameCost = COST['a'] * aPressed + COST['b'] * bPressed
-        costs.append(gameCost)
-
-    totalMinCost += round(min(costs)) if len(costs) > 0 else 0
-
-  return totalMinCost
-
+  return machines
 
 sample = '''
 Button A: X+94, Y+34
@@ -69,5 +94,6 @@ Prize: X=18641, Y=10279
 with open('2024-13-input.txt') as f:
   challengeInput = f.read().strip()
 
-print('Sample:', colored(main(sample), 'green'))
-print('First challenge:', colored(main(challengeInput), 'green'))
+print('First challenge sample:', colored(firstChallenge(sample), 'green'))
+print('First challenge:', colored(firstChallenge(challengeInput), 'green'))
+print('Second challenge:', colored(secondChallenge(challengeInput), 'green'))
