@@ -66,4 +66,8 @@ Button B: X+27, Y+71
 Prize: X=18641, Y=10279
 '''.strip()
 
+with open('2024-13-input.txt') as f:
+  challengeInput = f.read().strip()
+
 print('Sample:', colored(main(sample), 'green'))
+print('First challenge:', colored(main(challengeInput), 'green'))
