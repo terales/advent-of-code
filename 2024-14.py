@@ -3,9 +3,10 @@ from math import prod
 from termcolor import colored
 
 Robot = namedtuple('Robot', 'p v', defaults=[0j, 0j])
-DEBUG = False
+RUN_TESTS = False
+DEBUG = True
 
-def main(input, lobbySize, secondsElapsed):
+def firstChallenge(input, lobbySize, secondsElapsed):
   robots = buildRobotsMap(input)
   robotsAfter = getRobotPositionsAfter(robots, lobbySize, secondsElapsed)
 
@@ -28,6 +29,14 @@ def main(input, lobbySize, secondsElapsed):
     print(_buildDebugMap(lobbySize, robotsAfter, hideMiddles=True))
 
   return prod(robotsInQuadrants.values())
+
+def secondChallenge(input, lobbySize):
+  robots = buildRobotsMap(input)
+  for i in range(0, 10000): # scientifically cheated by submitting answers to reduce the range in bitwise search
+    robotsAfter = getRobotPositionsAfter(robots, lobbySize, i)
+    print('after', colored(i, 'green'), 'seconds')
+    print(_buildDebugMap(lobbySize, robotsAfter, hideMiddles=False, sameCharForAll=True))
+    print()
 
 def buildRobotsMap(text):
   robots = []
@@ -56,12 +65,10 @@ def getRobotPositionsAfter(robots, lobbySize, secondsElapsed):
     arrivedAtPositions.append(positionInLobby)
   return arrivedAtPositions
 
-def _buildDebugMap(lobbySize, positions, hideMiddles=False):
-  if not DEBUG:
-    return ''
-
+def _buildDebugMap(lobbySize, positions, hideMiddles=False, emptyChar='░', sameCharForAll=False):
   map = ''
-  DEBUG_SYMBOLS = 'abcdefghijklmnopqrstuvwxyz'
+  DEBUG_SYMBOLS = [chr(point) for point in range(5163, 5163 + len(positions))]
+  SAME_FOR_ALL_SYMBOL = '█'
   rowMiddleIndex = round(lobbySize.imag // 2)
   columnMiddleIndex = round(lobbySize.real // 2)
 
@@ -73,57 +80,62 @@ def _buildDebugMap(lobbySize, positions, hideMiddles=False):
 
       cell = complex(column, row)
       cellCount = positions.count(cell)
-      if cellCount > 0:
-        char = DEBUG_SYMBOLS[positions.index(cell)] if cellCount == 1 else cellCount
-        map += colored(char, 'green')
+      if cellCount <= 0:
+        map += emptyChar
+        continue
+      
+      if sameCharForAll:
+        char = SAME_FOR_ALL_SYMBOL
       else:
-        map += '.'
+        char = DEBUG_SYMBOLS[positions.index(cell)] if cellCount == 1 else cellCount
+      map += colored(char, 'black', 'on_green')
     map += '\n'
   return map
 
 
-sampleLobbySize = 11 + 7j
-sampleSecondsElapsed = 100
-sampleRobots = '''
-p=0,4 v=3,-3
-p=6,3 v=-1,-3
-p=10,3 v=-1,2
-p=2,0 v=2,-1
-p=0,0 v=1,3
-p=3,0 v=-2,-2
-p=7,6 v=-1,-3
-p=3,0 v=-1,-2
-p=9,3 v=2,3
-p=7,3 v=-1,2
-p=2,4 v=2,-3
-p=9,5 v=-3,-3
-'''.strip()
+if RUN_TESTS:
+  sampleLobbySize = 11 + 7j
+  sampleSecondsElapsed = 100
+  sampleRobots = '''
+  p=0,4 v=3,-3
+  p=6,3 v=-1,-3
+  p=10,3 v=-1,2
+  p=2,0 v=2,-1
+  p=0,0 v=1,3
+  p=3,0 v=-2,-2
+  p=7,6 v=-1,-3
+  p=3,0 v=-1,-2
+  p=9,3 v=2,3
+  p=7,3 v=-1,2
+  p=2,4 v=2,-3
+  p=9,5 v=-3,-3
+  '''.strip()
 
-teleportSampleSecondsElapsed = 5
-teleportSampleRobots = '''
-p=2,4 v=2,-3
-'''.strip()
+  teleportSampleSecondsElapsed = 5
+  teleportSampleRobots = '''
+  p=2,4 v=2,-3
+  '''.strip()
 
 
-print(
-  'Teleport sample. Expected: {expected}, actual:'
-    .format(
-      expected=colored('[(1+3j)]', 'green')
-    ),
-  colored(
-    getRobotPositionsAfter(
-      buildRobotsMap(teleportSampleRobots),
-      sampleLobbySize,
-      teleportSampleSecondsElapsed
-    ),
-    'green'
+  print(
+    'Teleport sample. Expected: {expected}, actual:'
+      .format(
+        expected=colored('[(1+3j)]', 'green')
+      ),
+    colored(
+      getRobotPositionsAfter(
+        buildRobotsMap(teleportSampleRobots),
+        sampleLobbySize,
+        teleportSampleSecondsElapsed
+      ),
+      'green'
+    )
   )
-)
 
-print('Sample. Expected: {expected}, actual: {actual}'.format(
-  expected=colored(12, 'green'),
-  actual=colored(main(sampleRobots, sampleLobbySize, 100), 'green')
-))
+  print('Sample. Expected: {expected}, actual: {actual}'.format(
+    expected=colored(12, 'green'),
+    actual=colored(firstChallenge(sampleRobots, sampleLobbySize, 100), 'green')
+  ))
 
 
 with open('2024-14-input.txt') as f:
@@ -131,4 +143,5 @@ with open('2024-14-input.txt') as f:
   challengeBlinks = 100
   challengeInput = f.read().strip()
 
-print('Fist challenge:', colored(main(challengeInput, challengeLobbySize, 100), 'green'))
+# print('Fist challenge:', colored(firstChallenge(challengeInput, challengeLobbySize, 100), 'green'))
+print('Second challenge:', secondChallenge(challengeInput, challengeLobbySize), 'green')
