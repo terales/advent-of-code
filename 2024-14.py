@@ -124,3 +124,11 @@ print('Sample. Expected: {expected}, actual: {actual}'.format(
   expected=colored(12, 'green'),
   actual=colored(main(sampleRobots, sampleLobbySize, 100), 'green')
 ))
+
+
+with open('2024-14-input.txt') as f:
+  challengeLobbySize = 101 + 103j
+  challengeBlinks = 100
+  challengeInput = f.read().strip()
+
+print('Fist challenge:', colored(main(challengeInput, challengeLobbySize, 100), 'green'))
