@@ -151,3 +151,9 @@ def _runTest(filename, testSum=True):
 
 _runTest('2024-15-sample-small.txt', True)
 _runTest('2024-15-sample.txt', True)
+
+
+with open('2024-15-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('First challenge:', colored(main(challengeInput), 'green'))
