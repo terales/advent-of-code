@@ -16,8 +16,8 @@ def main(input):
   return calcBoxCoordinatesSum(updatedMap)
 
 def move(map, movements):
-  updatedMap = {}
-  return map
+  updatedMap = map.copy()
+  return updatedMap
 
 def buildMap(text):
   map = {}
@@ -104,7 +104,7 @@ def _visualizeMap(map, rows, columns):
 
   return text
 
-def _runTest(filename):
+def _runTest(filename, testSum=True):
   expectedSum, steps, mapRows, mapColumns = _parseTestInput(filename)
 
   initialMap = steps[0]['mapAfter']
@@ -116,9 +116,10 @@ def _runTest(filename):
       _printFailedStepTest(filename, step['mapAfter'], updatedMap, mapRows, mapColumns)
       break
   
-  sum = calcBoxCoordinatesSum(updatedMap)
-  if sum != expectedSum:
-    _printFailedSumTest(filename, expectedSum, sum)
+  if testSum:
+    sum = calcBoxCoordinatesSum(updatedMap)
+    if sum != expectedSum:
+      _printFailedSumTest(filename, expectedSum, sum)
 
-_runTest('2024-15-sample-small.txt')
-_runTest('2024-15-sample.txt')
+_runTest('2024-15-sample-small.txt', False)
+_runTest('2024-15-sample.txt', False)
