@@ -17,23 +17,45 @@ def main(input):
 
 def move(map, movements):
   updatedMap = map.copy()
-  robotPosition = getRobotPosition(updatedMap)
+  robotNow = getRobotPosition(updatedMap)
 
   for step in movements:
-    positionAfterStep = robotPosition + step
+    robotAfter = robotNow + step
 
-    if map[positionAfterStep] == SIGNS['wall']:
-      print('wall')
+    if updatedMap[robotAfter] == SIGNS['wall']:
+      continue
 
-    if map[positionAfterStep] == SIGNS['empty']:
-      print('empty')
-      robotPosition = positionAfterStep
+    if updatedMap[robotAfter] == SIGNS['box']:
+      boxesPushed = pushBoxes(updatedMap, robotAfter, step)
+      if not boxesPushed:
+        continue
+      for boxNow, boxAfter in boxesPushed:
+        updatedMap[boxNow] = SIGNS['empty']
+        updatedMap[boxAfter] = SIGNS['box']
+
+    updatedMap[robotNow] = SIGNS['empty']
+    updatedMap[robotAfter] = SIGNS['robot']
+
+    robotNow = robotAfter
 
   return updatedMap
 
 def getRobotPosition(map):
   cellIndex = list(map.values()).index(SIGNS['robot'])
   return list(map.keys())[cellIndex]
+
+def pushBoxes(map, boxPosition, step):
+  newBoxPosition = boxPosition + step
+  boxMovement = (boxPosition, newBoxPosition)
+  
+  if map[newBoxPosition] == SIGNS['empty']:
+    return [boxMovement]
+  
+  if map[newBoxPosition] == SIGNS['box']:
+    nextBoxesPushed = pushBoxes(map, newBoxPosition, step)
+    if nextBoxesPushed:
+      nextBoxesPushed.append(boxMovement)
+      return nextBoxesPushed
 
 def buildMap(text):
   map = {}
@@ -68,7 +90,7 @@ def _parseTestInput(fileName):
   with open(fileName) as f:
     parts = f.read().strip().split('\n\n')
 
-  expectedSum = parts[0].split(' ')[1]
+  expectedSum = int(parts[0].split(' ')[1])
   mapText = parts[1].split(':')[1].strip()
   steps = [{
       'movements': [],
@@ -127,5 +149,5 @@ def _runTest(filename, testSum=True):
     if sum != expectedSum:
       _printFailedSumTest(filename, expectedSum, sum)
 
-_runTest('2024-15-sample-small.txt', False)
-_runTest('2024-15-sample.txt', False)
+_runTest('2024-15-sample-small.txt', True)
+_runTest('2024-15-sample.txt', True)
