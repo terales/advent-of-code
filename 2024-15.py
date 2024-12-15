@@ -16,15 +16,24 @@ def main(input):
   return calcBoxCoordinatesSum(updatedMap)
 
 def move(map, movements):
-  initialMap = map.copy()
-  updatedMap = {}
+  updatedMap = map.copy()
+  robotPosition = getRobotPosition(updatedMap)
 
   for step in movements:
-    robotPosition = list(initialMap.values()).index(SIGNS['robot'])
     positionAfterStep = robotPosition + step
-    updatedMap = initialMap
+
+    if map[positionAfterStep] == SIGNS['wall']:
+      print('wall')
+
+    if map[positionAfterStep] == SIGNS['empty']:
+      print('empty')
+      robotPosition = positionAfterStep
 
   return updatedMap
+
+def getRobotPosition(map):
+  cellIndex = list(map.values()).index(SIGNS['robot'])
+  return list(map.keys())[cellIndex]
 
 def buildMap(text):
   map = {}
@@ -80,8 +89,8 @@ def _printFailedSumTest(testName, expected, actual):
   print('expected:', colored(expected, 'green'))
   print('actual:  ', colored(actual, 'light_red'), end='\n\n')
 
-def _printFailedStepTest(testName, expectedMap, actualMap):
-  print(f"{testName}: step test")
+def _printFailedStepTest(testName, expectedMap, actualMap, stepsMade):
+  print(f"{testName}: step test failed on {stepsMade + 1} step")
   print('expected:', '\n' + colored(_visualizeMap(expectedMap), 'green'))
   print('actual:  ', '\n' + colored(_visualizeMap(actualMap), 'light_red'), end='\n\n')
 
@@ -105,12 +114,12 @@ def _runTest(filename, testSum=True):
   expectedSum, steps = _parseTestInput(filename)
 
   initialMap = steps[0]['mapAfter']
-  for step in steps[1:]:
+  for stepsMade, step in enumerate(steps[1:]):
     updatedMap = move(initialMap, step['movements'])
     if updatedMap == step['mapAfter']:
       initialMap = updatedMap
     else:
-      _printFailedStepTest(filename, step['mapAfter'], updatedMap)
+      _printFailedStepTest(filename, step['mapAfter'], updatedMap, stepsMade)
       break
   
   if testSum:
