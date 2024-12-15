@@ -16,15 +16,20 @@ def main(input):
   return calcBoxCoordinatesSum(updatedMap)
 
 def move(map, movements):
-  updatedMap = map.copy()
+  initialMap = map.copy()
+  updatedMap = {}
+
+  for step in movements:
+    robotPosition = list(initialMap.values()).index(SIGNS['robot'])
+    positionAfterStep = robotPosition + step
+    updatedMap = initialMap
+
   return updatedMap
 
 def buildMap(text):
   map = {}
   for rowIndex, row in enumerate(text.split('\n')):
     for columnIndex, cell in enumerate(row):
-      if cell == SIGNS['wall']:
-          continue
       position = complex(columnIndex, rowIndex)
       map[position] = cell
   return map
@@ -68,44 +73,36 @@ def _parseTestInput(fileName):
       'mapAfter': buildMap(mapText.strip()),
     })
 
-  mapRows = mapText.strip().split('\n')
-  mapRowsCount = len(mapRows)
-  mapColumnsCount = len(mapRows[0])
-  return expectedSum, steps, mapRowsCount, mapColumnsCount
+  return expectedSum, steps
 
 def _printFailedSumTest(testName, expected, actual):
   print(f"{testName}: sum of all boxes' GPS coordinates")
   print('expected:', colored(expected, 'green'))
   print('actual:  ', colored(actual, 'light_red'), end='\n\n')
 
-def _printFailedStepTest(testName, expectedMap, actualMap, rows, columns):
+def _printFailedStepTest(testName, expectedMap, actualMap):
   print(f"{testName}: step test")
-  print('expected:', '\n' + colored(_visualizeMap(expectedMap, rows, columns), 'green'))
-  print('actual:  ', '\n' + colored(_visualizeMap(actualMap, rows, columns), 'light_red'), end='\n\n')
+  print('expected:', '\n' + colored(_visualizeMap(expectedMap), 'green'))
+  print('actual:  ', '\n' + colored(_visualizeMap(actualMap), 'light_red'), end='\n\n')
 
-def _visualizeMap(map, rows, columns):
+def _visualizeMap(map):
+  if len(map) == 0:
+    return 'empty map'
+
   text = ''
-  rowEdges = [0, rows - 1]
-  columnEdges = [0, columns - 1]
+  rows = round(max([p.imag for p in map])) + 1
+  columns = round(max([p.real for p in map])) + 1
 
   for rowIndex in range(0, rows):
     for columnIndex in range(0, columns):
-      if rowIndex in rowEdges or columnIndex in columnEdges:
-        text += SIGNS['wall']
-        continue
-      
       position = complex(columnIndex, rowIndex)
-      if position in map:
-        text += map[position]
-        continue
-
-      text += SIGNS['empty']
+      text += map[position] if position in map else SIGNS['empty']
     text += '\n'
 
   return text
 
 def _runTest(filename, testSum=True):
-  expectedSum, steps, mapRows, mapColumns = _parseTestInput(filename)
+  expectedSum, steps = _parseTestInput(filename)
 
   initialMap = steps[0]['mapAfter']
   for step in steps[1:]:
@@ -113,7 +110,7 @@ def _runTest(filename, testSum=True):
     if updatedMap == step['mapAfter']:
       initialMap = updatedMap
     else:
-      _printFailedStepTest(filename, step['mapAfter'], updatedMap, mapRows, mapColumns)
+      _printFailedStepTest(filename, step['mapAfter'], updatedMap)
       break
   
   if testSum:
