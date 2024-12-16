@@ -18,11 +18,12 @@ TURN_COST = 1000
 def main(input):
   map, start, end = buildMap(input)
   
-  minimum_price = inf
+  minimumScore = inf
   paths = []
   paths.append(tuple([start]))
 
   while len(paths) > 0:
+    paths = sorted(paths, key=lambda p: calcPathCost(p) / len(paths), reverse=True)
     path = paths.pop()
     walkableNeighbours = getNewEmptyNeighbours(map, path[-1], path)
 
@@ -32,9 +33,9 @@ def main(input):
 
     if path[-1] == end:
       pathPrice = calcPathCost(path)
-      minimum_price = pathPrice if pathPrice < minimum_price else minimum_price
+      minimumScore = pathPrice if pathPrice < minimumScore else minimumScore
 
-  return minimum_price
+  return minimumScore
 
 def buildMap(text):
   map = {}
@@ -63,16 +64,16 @@ def getNewEmptyNeighbours(map, p, visited):
       newEmptyNeighbours.add(n)
   return newEmptyNeighbours
 
-def calcPathCost (path):
+def calcPathCost(path):
   score = 0
   currDirection = 1 + 0j
   prevStep = path[0]
 
   for step in path[1:]:
     directionDifference = step - prevStep - currDirection
-    hasVerticalTurn = currDirection.real == 0 and directionDifference.real != 0
-    hasHorizontalTurn = currDirection.imag == 0 and directionDifference.imag != 0
-    if hasVerticalTurn or hasHorizontalTurn:
+    turnedToHorizontal = currDirection.real == 0 and directionDifference.real != 0
+    turnedToVertical = currDirection.imag == 0 and directionDifference.imag != 0
+    if turnedToHorizontal or turnedToVertical:
       score += TURN_COST
       currDirection = complex(real=currDirection.imag, imag=currDirection.real)
 
@@ -120,6 +121,58 @@ sampleTwo = '''
 #################
 #'''.strip()
 
+# See https://www.reddit.com/r/adventofcode/comments/1hfhgl1/2024_day_16_part_1_alternate_test_case/
+sampleRedditOne = '''
+###########################
+#######################..E#
+######################..#.#
+#####################..##.#
+####################..###.#
+###################..##...#
+##################..###.###
+#################..####...#
+################..#######.#
+###############..##.......#
+##############..###.#######
+#############..####.......#
+############..###########.#
+###########..##...........#
+##########..###.###########
+#########..####...........#
+########..###############.#
+#######..##...............#
+######..###.###############
+#####..####...............#
+####..###################.#
+###..##...................#
+##..###.###################
+#..####...................#
+#.#######################.#
+#S........................#
+###########################
+'''.strip()
+
+# See https://www.reddit.com/r/adventofcode/comments/1hfhgl1/comment/m2cbzjl
+sampleRedditTwo = '''
+########################################################
+#.........#.........#.........#.........#.........#...E#
+#.........#.........#.........#.........#.........#....#
+#....#....#....#....#....#....#....#....#....#....#....#
+#....#....#....#....#....#....#....#....#....#....#....#
+#....#....#....#....#....#....#....#....#....#....#....#
+#....#....#....#....#....#....#....#....#....#....#....#
+#....#.........#.........#.........#.........#.........#
+#S...#.........#.........#.........#.........#.........#
+########################################################
+'''.strip()
 
 print('SampleOne. Expected: 7036, actual:', main(sampleOne))
 print('SampleTwo. Expected: 11048, actual:', main(sampleTwo))
+print('sampleRedditOne. Expected: 21148, actual:', main(sampleRedditOne))
+print('sampleRedditTwo. Expected: 21110, actual:', main(sampleRedditTwo))
+
+
+with open('2024-16-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('First challenge:', main(challengeInput))
