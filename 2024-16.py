@@ -1,3 +1,5 @@
+from math import inf
+
 SIGNS = {
   'start': 'S',
   'end': 'E',
@@ -10,12 +12,29 @@ NEIGHBOURING_POSITIONS = {
   0 + 1j,
   -1 + 0j,
 }
+STEP_COST = 1
+TURN_COST = 1000
 
 def main(input):
   map, start, end = buildMap(input)
-  pathsToEnd = walk(map, end, {tuple([start])})
-  # TODO calc price of walking the path
-  return 0
+  
+  minimum_price = inf
+  paths = []
+  paths.append(tuple([start]))
+
+  while len(paths) > 0:
+    path = paths.pop()
+    walkableNeighbours = getNewEmptyNeighbours(map, path[-1], path)
+
+    if len(walkableNeighbours) > 0:
+      for neighbour in walkableNeighbours:
+        paths.append(path + tuple([neighbour]))
+
+    if path[-1] == end:
+      pathPrice = calcPathCost(path)
+      minimum_price = pathPrice if pathPrice < minimum_price else minimum_price
+
+  return minimum_price
 
 def buildMap(text):
   map = {}
@@ -36,23 +55,6 @@ def buildMap(text):
       map[position] = cellOnMap
   return map, start, end
 
-
-def walk(map, end, visited):
-  newVisited = set()
-  for path in visited:
-    if path[-1] == end:
-      newVisited.add(path)
-      continue
-
-    neighbours = getNewEmptyNeighbours(map, path[-1], path)
-    if len(neighbours) == 0:
-      continue
-
-    for neighbour in neighbours:
-      newVisited.add(path + tuple([neighbour]))
-
-  return walk(map, end, newVisited) if visited != newVisited else newVisited
-
 def getNewEmptyNeighbours(map, p, visited):
   newEmptyNeighbours = set()
   neighbours = [p + n for n in NEIGHBOURING_POSITIONS]
@@ -60,6 +62,25 @@ def getNewEmptyNeighbours(map, p, visited):
     if map[n] == SIGNS['empty'] and not n in visited:
       newEmptyNeighbours.add(n)
   return newEmptyNeighbours
+
+def calcPathCost (path):
+  score = 0
+  currDirection = 1 + 0j
+  prevStep = path[0]
+
+  for step in path[1:]:
+    directionDifference = step - prevStep - currDirection
+    hasVerticalTurn = currDirection.real == 0 and directionDifference.real != 0
+    hasHorizontalTurn = currDirection.imag == 0 and directionDifference.imag != 0
+    if hasVerticalTurn or hasHorizontalTurn:
+      score += TURN_COST
+      currDirection = complex(real=currDirection.imag, imag=currDirection.real)
+
+    score += STEP_COST
+    prevStep = step
+
+  return score
+
 
 sampleOne = '''
 ###############
@@ -100,5 +121,5 @@ sampleTwo = '''
 #'''.strip()
 
 
-print('SampleOne. Expected: 7036, actual: ', main(sampleOne))
-print('SampleTwo. Expected: 11048, actual: ', main(sampleTwo))
+print('SampleOne. Expected: 7036, actual:', main(sampleOne))
+print('SampleTwo. Expected: 11048, actual:', main(sampleTwo))
