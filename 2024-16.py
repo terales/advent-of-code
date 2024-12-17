@@ -1,4 +1,4 @@
-from math import inf
+import nographs as nog
 
 SIGNS = {
   'start': 'S',
@@ -6,36 +6,15 @@ SIGNS = {
   'wall': '#',
   'empty': '.'
 }
-NEIGHBOURING_POSITIONS = {
+NEIGHBOURING_MOVES = {
   0 - 1j,
   1 + 0j,
   0 + 1j,
   -1 + 0j,
 }
+START_DIRECTION = 1 + 0j
 STEP_COST = 1
 TURN_COST = 1000
-
-def main(input):
-  map, start, end = buildMap(input)
-  
-  minimumScore = inf
-  paths = []
-  paths.append(tuple([start]))
-
-  while len(paths) > 0:
-    paths = sorted(paths, key=lambda p: calcPathCost(p) / len(paths), reverse=True)
-    path = paths.pop()
-    walkableNeighbours = getNewEmptyNeighbours(map, path[-1], path)
-
-    if len(walkableNeighbours) > 0:
-      for neighbour in walkableNeighbours:
-        paths.append(path + tuple([neighbour]))
-
-    if path[-1] == end:
-      pathPrice = calcPathCost(path)
-      minimumScore = pathPrice if pathPrice < minimumScore else minimumScore
-
-  return minimumScore
 
 def buildMap(text):
   map = {}
@@ -56,31 +35,49 @@ def buildMap(text):
       map[position] = cellOnMap
   return map, start, end
 
-def getNewEmptyNeighbours(map, p, visited):
-  newEmptyNeighbours = set()
-  neighbours = [p + n for n in NEIGHBOURING_POSITIONS]
+def graphSolution(input):
+  map, start, end = buildMap(input)
+
+  vertexToId = lambda s: s[0]
+  startVertex = tuple([start, START_DIRECTION, 0])
+  endVertex = tuple([end])
+  visited = set([start])
+
+  traversal = nog.TraversalAStarFlex(
+    vertexToId,
+    nog.GearDefault(),
+    next_edges=None,
+    next_labeled_edges=lambda p, t: nextSteps(map, visited, p, t),
+    is_tree=True
+  )
+
+  lastVertex = traversal.start_from(heuristic=lambda v: v[2],start_vertex=startVertex, build_paths=True).go_to(endVertex)
+
+  return lastVertex[2]
+
+def nextSteps(map, visited, vertex, _):
+  position = vertex[0]
+  previousCost = vertex[2]
+  neighbours = [position + move for move in NEIGHBOURING_MOVES]
   for n in neighbours:
     if map[n] == SIGNS['empty'] and not n in visited:
-      newEmptyNeighbours.add(n)
-  return newEmptyNeighbours
+      nextCost, newDirection = getStepCost(position, n, vertex[1])
+      cost = previousCost + nextCost
+      visited.add(n)
+      yield tuple([n, newDirection, cost]), nextCost
 
-def calcPathCost(path):
+def getStepCost(prevStep, step, currDirection):
   score = 0
-  currDirection = 1 + 0j
-  prevStep = path[0]
+  directionDifference = step - prevStep - currDirection
+  turnedToHorizontal = currDirection.real == 0 and directionDifference.real != 0
+  turnedToVertical = currDirection.imag == 0 and directionDifference.imag != 0
+  if turnedToHorizontal or turnedToVertical:
+    score += TURN_COST
+    currDirection = complex(real=currDirection.imag, imag=currDirection.real)
 
-  for step in path[1:]:
-    directionDifference = step - prevStep - currDirection
-    turnedToHorizontal = currDirection.real == 0 and directionDifference.real != 0
-    turnedToVertical = currDirection.imag == 0 and directionDifference.imag != 0
-    if turnedToHorizontal or turnedToVertical:
-      score += TURN_COST
-      currDirection = complex(real=currDirection.imag, imag=currDirection.real)
-
-    score += STEP_COST
-    prevStep = step
-
-  return score
+  score += STEP_COST
+  prevStep = step
+  return score, currDirection
 
 
 sampleOne = '''
@@ -166,13 +163,13 @@ sampleRedditTwo = '''
 ########################################################
 '''.strip()
 
-print('SampleOne. Expected: 7036, actual:', main(sampleOne))
-print('SampleTwo. Expected: 11048, actual:', main(sampleTwo))
-print('sampleRedditOne. Expected: 21148, actual:', main(sampleRedditOne))
-print('sampleRedditTwo. Expected: 21110, actual:', main(sampleRedditTwo))
+print('SampleOne. Expected: 7036, actual:', graphSolution(sampleOne))
+print('SampleTwo. Expected: 11048, actual:', graphSolution(sampleTwo))
+print('sampleRedditOne. Expected: 21148, actual:', graphSolution(sampleRedditOne))
+print('sampleRedditTwo. Expected: 21110, actual:', graphSolution(sampleRedditTwo))
 
 
 with open('2024-16-input.txt') as f:
   challengeInput = f.read().strip()
 
-print('First challenge:', main(challengeInput))
+print('First challenge:', graphSolution(challengeInput))
