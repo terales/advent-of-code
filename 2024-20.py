@@ -1,6 +1,7 @@
 from collections import Counter
 from copy import deepcopy
 from math import inf
+import time
 import networkx as nx
 
 SIGNS = {
@@ -16,10 +17,25 @@ NEIGHBOURING_MOVES = {
   -1 + 0j,
 }
 WEIGHT_ATTR = 'weight'
+NICE_CHEAT_TRESHOLD = 100
 
-def main(input):
+def main(input, cheatTreshold):
   map, start, end = buildMap(input)
-  pass
+  graph = buildGraph(map)
+  originalShortestPath = getShortestPath(graph, start, end)
+  originalTime = len(originalShortestPath)
+
+  cheatingTimes = 0
+  for stepBeforeCheat, stepsAfterCheat in getCheatingOptions(graph, originalShortestPath):
+    cheatingTimes += calcCheatingGains(
+      originalShortestPath,
+      stepBeforeCheat,
+      stepsAfterCheat,
+      originalTime,
+      cheatTreshold
+    )
+
+  return cheatingTimes
 
 def buildMap(text):
   map = {}
@@ -59,8 +75,7 @@ def buildGraph(map):
 def getShortestPath(graph, start, end):
   return nx.shortest_path(graph, source=start, target=end, weight='weight')
 
-def getFastestTime(graph, start, end):
-  path = getShortestPath(graph, start, end)
+def getPathTime(graph, path):
   return round(nx.path_weight(graph, path, weight='weight'))
 
 def calcEdgeWeight(fromTerrain, toTerrain):
@@ -84,12 +99,7 @@ def getCheatingOptions(graph, path):
         continue
 
       cheatsTried.add(neighbor)
-      cheatingOption = deepcopy(graph)
-      cheatingOption.nodes[neighbor]['terrain'] = SIGNS['empty']
-      for edge in cheatingOption.edges(neighbor):
-        if edge[1] == position or edge[1] in validNextSteps:
-          cheatingOption.edges[edge]['weight'] = 1
-      yield cheatingOption
+      yield position, validNextSteps
 
 def getValidNextSteps(graph, currentStep, previousStep):
   steps = []
@@ -102,6 +112,21 @@ def getValidNextSteps(graph, currentStep, previousStep):
       steps.append(step)
   return steps
 
+def calcCheatingGains(originalPath, stepBeforeCheat, stepsAfterCheat, originalTime, cheatTreshold):
+  cheatingTimes = 0
+  indexBeforeCheat = originalPath.index(stepBeforeCheat)
+
+  for stepAfterCheat in stepsAfterCheat:
+    indexAfterCheat = originalPath.index(stepAfterCheat)
+
+    cheatingTime = len(originalPath[:indexBeforeCheat + 1])
+    cheatingTime += 1
+    cheatingTime += len(originalPath[indexAfterCheat:])
+
+    timeSaved = originalTime - cheatingTime
+    if timeSaved >= cheatTreshold:
+      cheatingTimes += 1
+  return cheatingTimes
 
 def _visualizeMaze(graph, highlight = []):
   text = ''
@@ -141,39 +166,27 @@ sample = '''
 def _testGetFastestTime(input, expected):
   map, start, end = buildMap(input)
   graph = buildGraph(map)
-  time = getFastestTime(graph, start, end)
+  shortestPath = getShortestPath(graph, start, end)
+  time = getPathTime(graph, shortestPath)
   if time != expected:
     print(f"❌ Fastest time didn't match. Expected: {expected}, actual: {time}")
 
 _testGetFastestTime(sample, 84)
 
 
-def _testCheats(input, expectations):
-  map, start, end = buildMap(input)
-  graph = buildGraph(map)
-  originalShortestPath = getShortestPath(graph, start, end)
-  originalTime = getFastestTime(graph, start, end)
+def _testSample(input, cheatTreshold, expected):
+  time = main(input, cheatTreshold)
+  if time != expected:
+    print(f"❌ Final sample test didn't pass. Expected: {expected}, actual: {time}")
 
-  cheatingTimes = []
-  for cheatingGraph in getCheatingOptions(graph, originalShortestPath):
-    cheatingTime = getFastestTime(cheatingGraph, start, end)
-    if cheatingTime < originalTime:
-      cheatingTimes.append(originalTime - cheatingTime)
+_testSample(sample, 20, 5)
 
-  cheatingTimesCount = dict(Counter(cheatingTimes))
-  if cheatingTimesCount != expectations:
-    print(f"❌ Fastest time didn't match. Expected:\n{expectations}\nActual:\n{cheatingTimesCount}")
 
-_testCheats(sample, {
-  2: 14,
-  4: 14,
-  6: 2,
-  8: 4,
-  10: 2,
-  12: 3,
-  20: 1,
-  36: 1,
-  38: 1,
-  40: 1,
-  64: 1,
-})
+with open('2024-20-input.txt') as f:
+  challengeInput = f.read().strip()
+
+print('Starting first challenge', flush=True)
+startTime = time.time()
+answer = main(challengeInput, NICE_CHEAT_TRESHOLD)
+secondsToCalculate = time.time() - startTime
+print(f'First challenge: {answer}.\nTook {round(secondsToCalculate, 3)} seconds to calculate')
