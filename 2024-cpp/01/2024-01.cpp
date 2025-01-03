@@ -1,7 +1,9 @@
 #include <iostream>
+#include <llvm/ADT/StringRef.h>
 
 int main() {
-    static const char str[] = "a string";
-    std::cout << str << std::endl;
+    llvm::StringRef s = llvm::StringRef("a string");
+
+    std::cout << std::string(s) << t << std::endl;
     return 0;
 }
