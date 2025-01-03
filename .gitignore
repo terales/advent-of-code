@@ -1,1 +1,4 @@
 .venv
+*.sample
+.input
+*-bin
