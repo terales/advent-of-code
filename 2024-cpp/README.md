@@ -1,7 +1,7 @@
 Build from current folder using LLVM 19:
 
 ```bash
-cmake -Wno-dev .
+cmake -Wno-dev -D CMAKE_C_COMPILER=/opt/homebrew/opt/llvm/bin/clang -D CMAKE_CXX_COMPILER=/opt/homebrew/opt/llvm/bin/clang++  ./
 cmake --build .
 ```
 

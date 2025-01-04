@@ -1,7 +1,6 @@
-project(CppAdventOfCode2024)
+cmake_minimum_required(VERSION 3.31.3)
 
-set(CMAKE_C_COMPILER "/opt/homebrew/opt/llvm/bin/clang")
-set(CMAKE_CXX_COMPILER "/opt/homebrew/opt/llvm/bin/clang++")
+project(CppAdventOfCode2024)
 
 find_package(LLVM REQUIRED CONFIG)
 
