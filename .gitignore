@@ -1,6 +1,6 @@
 .venv
 *.sample
 .input
-*-bin
+solution
 compile_commands.json
 .cache
