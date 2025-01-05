@@ -2,5 +2,6 @@
 *.sample
 .input
 solution
+*.a
 compile_commands.json
 .cache
