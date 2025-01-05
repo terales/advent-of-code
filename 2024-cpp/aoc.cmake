@@ -2,10 +2,11 @@ set(RULE_MESSAGES OFF)
 set(CMAKE_RULE_MESSAGES OFF)
 set(CMAKE_TARGET_MESSAGES OFF)
 set(CMAKE_INSTALL_MESSAGE NEVER)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_CLANG_TIDY clang-tidy)
 
 
 add_executable(${TARGET} ${SOURCE})
@@ -15,14 +16,15 @@ add_library(AocUtilsModule
     "${CMAKE_CURRENT_LIST_DIR}/_utils/aoc_common.cpp"
 )
 
-include_directories(${TARGET}
+include_directories(
     "${CMAKE_CURRENT_LIST_DIR}/_utils"
 )
+
 
 find_package(LLVM REQUIRED CONFIG)
 find_package(Boost 1.87.0 EXACT)
 
-include_directories(${TARGET} SYSTEM
+include_directories(SYSTEM
     ${Boost_INCLUDE_DIRS}
     ${LLVM_INCLUDE_DIRS}
 )
