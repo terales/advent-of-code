@@ -29,12 +29,11 @@ int main(int argc, char **argv) {
     std::ranges::sort(leftLocations, std::ranges::less());
     std::ranges::sort(rightLocations, std::ranges::less());
 
-    std::vector<int> distances(leftLocations.size());
+    int totalDistance = 0;
     for (size_t i = 0; i < leftLocations.size(); i++) {
-        distances[i] = std::abs(rightLocations[i] - leftLocations[i]);
+        totalDistance += std::abs(leftLocations[i] - rightLocations[i]);
+        std::cout << "Total distance: " << totalDistance << " = " << leftLocations[i] << " - " << rightLocations[i] << "\n";
     }
-
-    int totalDistance = std::ranges::fold_left(distances, 0, std::plus<int>());
     std::cout << "Total distance: " << totalDistance << "\n";
 
     return 0;
