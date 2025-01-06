@@ -30,11 +30,13 @@ int main(int argc, char **argv) {
     std::ranges::sort(rightLocations, std::ranges::less());
 
     int totalDistance = 0;
+    int similarityScore = 0;
     for (size_t i = 0; i < leftLocations.size(); i++) {
         totalDistance += std::abs(leftLocations[i] - rightLocations[i]);
-        std::cout << "Total distance: " << totalDistance << " = " << leftLocations[i] << " - " << rightLocations[i] << "\n";
+        similarityScore += leftLocations[i] * std::ranges::count(rightLocations, leftLocations[i]);
     }
     std::cout << "Total distance: " << totalDistance << "\n";
+    std::cout << "Similarity score: " << similarityScore << "\n";
 
     return 0;
 }
