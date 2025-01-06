@@ -1,27 +1,25 @@
-#include <assert.h>
 #include <algorithm>
+#include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <boost/algorithm/string_regex.hpp>
 #include "aoc_common.h"
 
 int main(int argc, char **argv) {
-    const std::string inputFilename = aoc_common::getFilenameFromCliArgs(argc, argv);
-    const std::string input = aoc_common::getStrippedInputStr(inputFilename);
+    std::string inputFilename = aoc_common::getFilenameFromCliArgs(argc, argv);
+    std::ifstream inputStream(inputFilename, std::ios_base::in);
 
-    std::vector<std::string> locations;
+    int temp;
     std::vector<int> leftLocations;
     std::vector<int> rightLocations;
-    boost::algorithm::split_regex( locations, input, boost::regex( "(?:   |\n)" ));
-    assert(locations.size() % 2 == 0);
-
     bool isLeft = true;
-    for (size_t i = 0; i < locations.size(); i++) {
+
+    while (inputStream >> temp) {
         if (isLeft) {
-            leftLocations.push_back(std::stoi(locations[i]));
+            leftLocations.push_back(temp);
         } else {
-            rightLocations.push_back(std::stoi(locations[i]));
+            rightLocations.push_back(temp);
         }
         isLeft = !isLeft;
     }
@@ -29,11 +27,16 @@ int main(int argc, char **argv) {
     std::ranges::sort(leftLocations, std::ranges::less());
     std::ranges::sort(rightLocations, std::ranges::less());
 
+    std::map<int, std::size_t> rightLocationOccurrences;
+    for (const int location : rightLocations) {
+        rightLocationOccurrences[location] += 1;
+    }
+
     int totalDistance = 0;
     int similarityScore = 0;
     for (size_t i = 0; i < leftLocations.size(); i++) {
         totalDistance += std::abs(leftLocations[i] - rightLocations[i]);
-        similarityScore += leftLocations[i] * std::ranges::count(rightLocations, leftLocations[i]);
+        similarityScore += leftLocations[i] * rightLocationOccurrences[leftLocations[i]];
     }
     std::cout << "Total distance: " << totalDistance << "\n";
     std::cout << "Similarity score: " << similarityScore << "\n";
