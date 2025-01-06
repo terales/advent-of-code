@@ -10,27 +10,24 @@ int main(int argc, char **argv) {
     std::string inputFilename = aoc_common::getFilenameFromCliArgs(argc, argv);
     std::ifstream inputStream(inputFilename, std::ios_base::in);
 
-    int temp;
     std::vector<int> leftLocations;
     std::vector<int> rightLocations;
+    std::map<int, std::size_t> rightLocationOccurrences;
     bool isLeft = true;
+    int temp;
 
     while (inputStream >> temp) {
         if (isLeft) {
             leftLocations.push_back(temp);
         } else {
             rightLocations.push_back(temp);
+            rightLocationOccurrences[temp] += 1;
         }
         isLeft = !isLeft;
     }
 
     std::ranges::sort(leftLocations, std::ranges::less());
     std::ranges::sort(rightLocations, std::ranges::less());
-
-    std::map<int, std::size_t> rightLocationOccurrences;
-    for (const int location : rightLocations) {
-        rightLocationOccurrences[location] += 1;
-    }
 
     int totalDistance = 0;
     int similarityScore = 0;
