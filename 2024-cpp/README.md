@@ -1,3 +1,10 @@
+Start a new day:
+
+```bash
+./start_new_day.fish
+```
+
+
 Build from current folder using LLVM 19:
 
 ```bash
