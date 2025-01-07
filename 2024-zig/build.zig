@@ -20,34 +20,53 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(lib);
 
-    const day_01_exe_mod = b.createModule(.{
-        .root_source_file = b.path("src/day_01.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     //
     // Executables
     //
-    day_01_exe_mod.addImport("aoc_utils_lib", lib_mod);
+    const src = "src";
+    const day_root_start = "day";
 
-    const exe = b.addExecutable(.{
-        .name = "2024-zig",
-        .root_module = day_01_exe_mod,
-    });
+    var dir = std.fs.cwd().openDir(src, .{ .iterate = true }) catch unreachable;
+    defer dir.close();
+    var dir_iterator = dir.iterate();
 
-    b.installArtifact(exe);
+    while (dir_iterator.next() catch unreachable) |entry| {
+        if (entry.kind != .file or !std.mem.startsWith(u8, entry.name, day_root_start)) {
+            continue;
+        }
 
-    //
-    // Run step
-    //
-    const run_cmd = b.addRunArtifact(exe);
-    run_cmd.step.dependOn(b.getInstallStep());
+        const exe_mod = b.createModule(.{
+            .root_source_file = .{
+                .src_path = .{
+                    .sub_path = b.pathJoin(&.{ src, entry.name }),
+                    .owner = b,
+                },
+            },
+            .target = target,
+            .optimize = optimize,
+        });
 
-    if (b.args) |args| {
-        run_cmd.addArgs(args);
+        exe_mod.addImport("aoc_utils_lib", lib_mod);
+
+        const exe = b.addExecutable(.{
+            .name = std.fs.path.stem(entry.name),
+            .root_module = exe_mod,
+        });
+
+        b.installArtifact(exe);
+
+        //
+        // Run step
+        //
+        const run_cmd = b.addRunArtifact(exe);
+        run_cmd.step.dependOn(b.getInstallStep());
+
+        if (b.args) |args| {
+            run_cmd.addArgs(args);
+        }
+
+        const step_name = b.fmt("run_{s}", .{std.fs.path.stem(entry.name)});
+        const run_step = b.step(step_name, "Run the day's solution");
+        run_step.dependOn(&run_cmd.step);
     }
-
-    const run_step = b.step("run", "Run the app");
-    run_step.dependOn(&run_cmd.step);
 }
