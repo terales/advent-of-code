@@ -1,10 +1,15 @@
 const std = @import("std");
 const testing = std.testing;
 
-pub export fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
+pub fn getInputFilePath(allocator: std.mem.Allocator) ![]const u8 {
+    var args = try std.process.argsWithAllocator(allocator);
+    defer args.deinit();
 
-test "basic add functionality" {
-    try testing.expect(add(3, 7) == 10);
+    _ = args.skip(); // skip executable
+
+    if (args.next()) |lastArg| {
+        return lastArg;
+    } else {
+        return error.NoArgsReceived;
+    }
 }
