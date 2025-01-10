@@ -14,17 +14,17 @@ pub fn main() !void {
 
     var splitSequence = std.mem.tokenizeAny(u8, content, " \n");
 
-    var leftList = std.ArrayList(u8).init(allocator);
+    var leftList = std.ArrayList(u32).init(allocator);
     defer leftList.deinit();
-    var rightList = std.ArrayList(u8).init(allocator);
+    var rightList = std.ArrayList(u32).init(allocator);
     defer rightList.deinit();
-    var rightListOccurrences = std.AutoHashMap(u8, u8).init(allocator);
+    var rightListOccurrences = std.AutoHashMap(u32, u32).init(allocator);
     defer rightListOccurrences.deinit();
 
     var isEven = true;
 
     while (splitSequence.next()) |token| {
-        const tokenInt = try std.fmt.parseInt(u8, token, 10);
+        const tokenInt = try std.fmt.parseUnsigned(u32, token, 10);
 
         if (isEven) {
             try leftList.append(tokenInt);
@@ -37,13 +37,13 @@ pub fn main() !void {
         isEven = !isEven;
     }
 
-    std.mem.sort(u8, leftList.items, {}, std.sort.asc(u8));
-    std.mem.sort(u8, rightList.items, {}, std.sort.asc(u8));
+    std.mem.sort(u32, leftList.items, {}, std.sort.asc(u32));
+    std.mem.sort(u32, rightList.items, {}, std.sort.asc(u32));
 
-    var totalDistance: u16 = 0;
-    var similarityScore: u16 = 0;
+    var totalDistance: u64 = 0;
+    var similarityScore: u64 = 0;
     for (leftList.items, 0..) |leftItem, i| {
-        totalDistance += @abs(@as(i16, leftItem) - @as(i16, rightList.items[i]));
+        totalDistance += @abs(@as(i64, leftItem) - @as(i64, rightList.items[i]));
         similarityScore += leftItem * (rightListOccurrences.get(leftItem) orelse 0);
     }
 
