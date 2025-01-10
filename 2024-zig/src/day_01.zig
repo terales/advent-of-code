@@ -9,6 +9,12 @@ pub fn main() !void {
         if (deinit_status == .leak) @panic("Memory leak detected!");
     }
 
-    const inputFilePath: []const u8 = try aoc_utils.getInputFilePath(allocator);
-    std.debug.print("File path: {?s}\n", .{inputFilePath});
+    const content = try aoc_utils.getInputContent(allocator);
+    defer allocator.free(content);
+
+    var splitSequence = std.mem.tokenizeAny(u8, content, " \n");
+
+    while (splitSequence.next()) |token| {
+        std.debug.print("{s}\n", .{token});
+    }
 }
