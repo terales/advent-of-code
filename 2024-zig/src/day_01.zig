@@ -2,30 +2,20 @@ const std = @import("std");
 const aoc_utils = @import("aoc_utils_lib");
 
 pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer {
-        const deinit_status = gpa.deinit();
-        if (deinit_status == .leak) @panic("Memory leak detected!");
-    }
-
-    const content = try aoc_utils.getInputContent(allocator);
-    defer allocator.free(content);
-
-    var splitSequence = std.mem.tokenizeAny(u8, content, " \n");
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    const allocator = arena.allocator();
+    defer arena.deinit();
 
     var leftList = std.ArrayList(u32).init(allocator);
-    defer leftList.deinit();
     var rightList = std.ArrayList(u32).init(allocator);
-    defer rightList.deinit();
     var rightListOccurrences = std.AutoHashMap(u32, u32).init(allocator);
-    defer rightListOccurrences.deinit();
 
+    const content = try aoc_utils.getInputContent(allocator);
+    var splitSequence = std.mem.tokenizeAny(u8, content, " \n");
     var isEven = true;
 
     while (splitSequence.next()) |token| {
         const tokenInt = try std.fmt.parseUnsigned(u32, token, 10);
-
         if (isEven) {
             try leftList.append(tokenInt);
         } else {
