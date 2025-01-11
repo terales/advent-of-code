@@ -9,6 +9,27 @@ pub fn main() !void {
     var safeReports: u16 = 0;
     var safeReportsWithProblemDampener: u16 = 0;
 
+    for (try getParsedInput(allocator)) |report| {
+        const unsafeLevelIndex = findUnsafeLevel(report);
+        if (unsafeLevelIndex == null) {
+            safeReports = safeReports + 1;
+            safeReportsWithProblemDampener = safeReportsWithProblemDampener + 1;
+            continue;
+        }
+
+        const hasProblemDampenerHelped = try doesProblemDampenerHelp(allocator, report, unsafeLevelIndex.?);
+        if (hasProblemDampenerHelped) {
+            safeReportsWithProblemDampener = safeReportsWithProblemDampener + 1;
+        }
+    }
+
+    std.debug.print("Safe reports: {d}\n", .{safeReports});
+    std.debug.print("Safe reports thanks to the Problem Dampener: {d}\n", .{safeReportsWithProblemDampener});
+}
+
+fn getParsedInput(allocator: std.mem.Allocator) ![][]i16 {
+    var reports = std.ArrayList([]i16).init(allocator);
+
     const content = try aoc_utils.getInputContent(allocator);
     var rawReports = std.mem.tokenizeScalar(u8, content, '\n');
 
@@ -20,43 +41,22 @@ pub fn main() !void {
             const level = try std.fmt.parseUnsigned(i16, rawLevel, 10);
             try report.append(level);
         }
-
-        const analysis = analyzeReport(report);
-        if (analysis.isCorrect) {
-            safeReports = safeReports + 1;
-            safeReportsWithProblemDampener = safeReportsWithProblemDampener + 1;
-            continue;
-        }
-
-        const hasProblemDampenerHelped = try doesProblemDampenerHelp(allocator, report, analysis.firstBadLevelIndex);
-        if (hasProblemDampenerHelped) {
-            safeReportsWithProblemDampener = safeReportsWithProblemDampener + 1;
-        }
+        try reports.append(report.items);
     }
 
-    std.debug.print("Safe reports: {d}\n", .{safeReports});
-    std.debug.print("Safe reports thanks to the Problem Dampener: {d}\n", .{safeReportsWithProblemDampener});
+    return reports.items;
 }
 
-const ReportAnalysis = struct {
-    isCorrect: bool,
-    firstBadLevelIndex: usize,
-};
-
-fn analyzeReport(report: std.ArrayList(i16)) ReportAnalysis {
-    var previousLevel = report.items[0];
+fn findUnsafeLevel(report: []i16) ?usize {
     var levelIncreased = false;
     var levelDecreased = false;
 
-    for (report.items[1..], 0..) |level, index| {
+    for (report[1..], 1..) |level, index| {
+        const previousLevel = report[index - 1];
         const levelChange = level - previousLevel;
-        previousLevel = level;
 
         if (@abs(levelChange) < 1 or @abs(levelChange) > 3) {
-            return ReportAnalysis{
-                .isCorrect = false,
-                .firstBadLevelIndex = index,
-            };
+            return index;
         }
 
         if (levelChange > 0) {
@@ -66,36 +66,28 @@ fn analyzeReport(report: std.ArrayList(i16)) ReportAnalysis {
         }
 
         if (levelIncreased and levelDecreased) {
-            return ReportAnalysis{
-                .isCorrect = false,
-                .firstBadLevelIndex = index,
-            };
+            return index;
         }
     }
 
-    return ReportAnalysis{
-        .isCorrect = true,
-        .firstBadLevelIndex = 0,
-    };
+    return null;
 }
 
-fn doesProblemDampenerHelp(allocator: std.mem.Allocator, report: std.ArrayList(i16), badLevelIndex: usize) !bool {
-    const levelsToTryDumping = [3]usize{
-        badLevelIndex,
-        badLevelIndex + 1,
+fn doesProblemDampenerHelp(allocator: std.mem.Allocator, report: []i16, badLevelIndex: usize) !bool {
+    const levelsToTryDumping = [_]usize{
+        badLevelIndex -| 2,
         badLevelIndex -| 1,
+        badLevelIndex,
     };
 
     for (levelsToTryDumping) |indexToDump| {
-        const dumpedReportSlice = try std.mem.concat(allocator, i16, &[_][]i16{
-            report.items[0..indexToDump],
-            report.items[indexToDump + 1 ..],
+        const dumpedReport = try std.mem.concat(allocator, i16, &[_][]i16{
+            report[0..indexToDump],
+            report[indexToDump + 1 ..],
         });
 
-        const dumpedReport = std.ArrayList(i16).fromOwnedSlice(allocator, dumpedReportSlice);
-
-        const dumpedReportAnalysis = analyzeReport(dumpedReport);
-        if (dumpedReportAnalysis.isCorrect) {
+        const unsafeLevelIndex = findUnsafeLevel(dumpedReport);
+        if (unsafeLevelIndex == null) {
             return true;
         }
     }
