@@ -7,7 +7,7 @@ pub fn main() !void {
     defer arena.deinit();
 
     const content = try aoc_utils.getInputContent(allocator);
-    var sum: u16 = 0;
+    var sum: u32 = 0;
 
     var functions = std.mem.tokenizeSequence(u8, content, "mul(");
     while (functions.next()) |function| {
@@ -18,14 +18,17 @@ pub fn main() !void {
         }
 
         var factors = std.mem.tokenizeScalar(u8, params orelse "", ',');
-        const multiplier = std.fmt.parseUnsigned(u16, factors.next() orelse "", 10) catch |err| switch (err) {
+        const multiplier = std.fmt.parseUnsigned(u32, factors.next() orelse "", 10) catch |err| switch (err) {
             error.InvalidCharacter => continue,
             else => return err,
         };
-        const multiplicand = std.fmt.parseUnsigned(u16, factors.next() orelse "", 10) catch |err| switch (err) {
+        const multiplicand = std.fmt.parseUnsigned(u32, factors.next() orelse "", 10) catch |err| switch (err) {
             error.InvalidCharacter => continue,
             else => return err,
         };
+        if (factors.next() != null) {
+            continue; // continue for cases like "mul(12,34,sdfsfs)"
+        }
 
         sum = sum + multiplier * multiplicand;
     }
