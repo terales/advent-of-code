@@ -7,9 +7,31 @@ pub fn main() !void {
     defer arena.deinit();
 
     const content = try aoc_utils.getInputContent(allocator);
-    var sum: u32 = 0;
+    var sumUnconditional: u32 = 0;
+    var sumConditional: u32 = 0;
+    var enabled = true;
 
-    var functions = std.mem.tokenizeSequence(u8, content, "mul(");
+    var dont_tokens = std.mem.tokenizeSequence(u8, content, "don't()");
+    while (dont_tokens.next()) |dont_token| {
+        var do_tokens = std.mem.tokenizeSequence(u8, dont_token, "do()");
+        while (do_tokens.next()) |do_token| {
+            const sumProducts = try runMultiplies(do_token);
+            sumUnconditional = sumUnconditional + sumProducts;
+            if (enabled) {
+                sumConditional = sumConditional + sumProducts;
+            }
+
+            enabled = true;
+        }
+        enabled = false;
+    }
+    std.debug.print("Part 1: {d}\n", .{sumUnconditional});
+    std.debug.print("Part 2: {d}\n", .{sumConditional});
+}
+
+fn runMultiplies(instructions: []const u8) !u32 {
+    var sum: u32 = 0;
+    var functions = std.mem.tokenizeSequence(u8, instructions, "mul(");
     while (functions.next()) |function| {
         var paramsIterator = std.mem.tokenizeScalar(u8, function, ')');
         const params = paramsIterator.next();
@@ -32,5 +54,5 @@ pub fn main() !void {
 
         sum = sum + multiplier * multiplicand;
     }
-    std.debug.print("Part 1: {d}\n", .{sum});
+    return sum;
 }
